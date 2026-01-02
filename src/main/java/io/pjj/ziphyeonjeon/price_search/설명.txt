@@ -1,0 +1,4 @@
+api 받아오는건 global api 폴더에서 만들기
+그리고 그걸 조회하는 기능은 내 price_search 폴더에 기능만들기 
+프론트는 react.js로 만들기
+.env는 glbal 안에 만들기
