@@ -4,7 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-
+"C:\Users\ysyhs\Desktop\Github\ZIPHYEONJEON\src\main\resources\application-local.properties"
 
 ### 설정 파일 보안 ###
 src/main/resources/application-local.properties
