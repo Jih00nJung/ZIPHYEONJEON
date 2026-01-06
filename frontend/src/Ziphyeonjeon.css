@@ -1,0 +1,201 @@
+/* Ziphyeonjeon.css */
+:root {
+    --primary-color: #38bdf8;
+    --primary-dark: #0284c7;
+    --secondary-color: #4ade80;
+    --bg-surface: #f8fafc;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --white: #ffffff;
+    --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e2e8f0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* 버튼 영역 정렬 */
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* ERD 버튼 */
+.btn-erd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #475569;
+    font-weight: 700;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.btn-erd:hover {
+    color: #0284c7;
+}
+
+/* Github 버튼 */
+.btn-github {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #1e293b;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.btn-github:hover {
+    background-color: #0f172a;
+    transform: translateY(-1px);
+}
+
+.material-symbols-outlined {
+    vertical-align: middle;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--text-main);
+}
+
+.nav-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary-dark);
+}
+
+/* Hero Section */
+.hero {
+    padding: 80px 0;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    background: linear-gradient(135deg, var(--white) 60%, var(--bg-surface) 40%);
+}
+
+.hero-text {
+    flex: 1;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: var(--primary-dark);
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    color: var(--text-main);
+    margin-bottom: 24px;
+}
+
+.text-gradient {
+    background: linear-gradient(to right, var(--primary-dark), var(--primary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Search Bar */
+.search-container {
+    display: flex;
+    background: var(--white);
+    padding: 8px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid #f1f5f9;
+    margin-top: 30px;
+}
+
+.search-container input {
+    flex: 1;
+    border: none;
+    padding: 15px;
+    outline: none;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 12px 30px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+/* Architecture Section */
+.arch-section {
+    padding: 100px 0;
+    background: var(--bg-surface);
+}
+
+.arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, min-minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.arch-card {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s;
+}
+
+.arch-card:hover {
+    transform: translateY(-10px);
+}

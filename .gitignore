@@ -5,6 +5,10 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+
+### 설정 파일 보안 ###
+src/main/resources/application-local.properties
+
 ### STS ###
 .apt_generated
 .classpath
