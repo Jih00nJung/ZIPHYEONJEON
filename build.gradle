@@ -45,6 +45,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+    implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'org.springframework.boot:spring-boot-starter'
 }
 
 dependencyManagement {

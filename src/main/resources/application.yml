@@ -1,0 +1,22 @@
+external:
+  vworld:
+    base-url: ${VWORLD_BASE_URL:https://api.vworld.kr}
+    search-base-url: ${VWORLD_SEARCH_BASE_URL:https://map.vworld.kr}
+    api-key: ${VWORLD_API_KEY}
+
+  seoul:
+    base-url: ${SEOUL_OPENAPI_BASE_URL:http://openapi.seoul.go.kr:8088}
+    api-key: ${SEOUL_OPENAPI_KEY}
+
+
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true

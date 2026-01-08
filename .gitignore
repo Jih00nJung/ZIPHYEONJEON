@@ -7,6 +7,10 @@ build/
 "C:\Users\ysyhs\Desktop\Github\ZIPHYEONJEON\src\main\resources\application-local.properties"
 application-local.properties
 **/application-local.properties
+.env
+application-local.yml
+/data/
+*.csv
 
 
 ### 설정 파일 보안 ###
