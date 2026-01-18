@@ -4,7 +4,7 @@ import './RiskAnalysis.css';
 const RiskAnalysis = () => {
     return (
         <div className="analysis-page">
-            {/* 1. Analysis Process (기획서 2단계 시각화) [cite: 16, 18] */}
+            {/* 1. Analysis Process (기획서 2단계 시각화) */}
             <section className="process-card">
                 <div className="progress-track"><div className="progress-fill"></div></div>
                 <div className="steps-container">
@@ -33,7 +33,7 @@ const RiskAnalysis = () => {
             </div>
 
             <div className="dashboard-grid">
-                {/* 3. Safety Score Card (종합 안전 점수 85점) [cite: 96] */}
+                {/* 3. Safety Score Card (종합 안전 점수 85점) */}
                 <div className="white-card col-8" style={{display: 'flex', gap: '40px'}}>
                     <div className="score-box">
                         <svg className="score-circle-svg" viewBox="0 0 100 100">
@@ -59,7 +59,7 @@ const RiskAnalysis = () => {
                     </div>
                 </div>
 
-                {/* 4. Risk Summary (요약 리스크) [cite: 83] */}
+                {/* 4. Risk Summary (요약 리스크) */}
                 <div className="white-card col-4">
                     <h3 style={{fontSize: '1.1rem', fontWeight: '800', marginBottom: '24px'}}>Risk Summary</h3>
                     <SummaryItem icon="check" title="Owner Verified" desc="Identity matches title deed" type="success" />
@@ -68,7 +68,7 @@ const RiskAnalysis = () => {
                     <button className="btn-dark-full">View Detailed Report →</button>
                 </div>
 
-                {/* 5. Title Deed & Market (등기 및 시세 분석) [cite: 87, 88] */}
+                {/* 5. Title Deed & Market (등기 및 시세 분석) */}
                 <div className="white-card col-4">
                     <h4 style={{fontWeight: '800', marginBottom: '20px'}}>Title Deed Analysis</h4>
                     <div className="owner-info">

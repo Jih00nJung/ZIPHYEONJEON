@@ -93,21 +93,100 @@
     color: var(--text-main);
 }
 
-.nav-links a {
+.logo_link {
+    display: flex; align-items: center; gap: 8px;
+    text-decoration: none; color: inherit;
+}
+
+.logo {
+    width: 35px; margin-top: 5px;
+}
+
+
+/* Nav Links & Dropdown */
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-item {
+    position: relative;
+    padding: 10px 0;
+    /* Increase hit area for hover */
+}
+
+.nav-link {
     margin: 0 15px;
     text-decoration: none;
     color: var(--text-muted);
     font-weight: 600;
     font-size: 0.9rem;
     transition: color 0.3s;
+    cursor: pointer;
+    display: block;
 }
 
-.nav-links a:hover {
+.nav-link:hover,
+.dropdown:hover .nav-link {
     color: var(--primary-dark);
 }
 
-/* Hero Section */
-.hero {
+/* Dropdown Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 10px;
+    /* Align slightly indented or centered */
+    background: var(--white);
+    min-width: 160px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 8px 0;
+    display: none;
+    /* Hidden by default */
+    flex-direction: column;
+    border: 1px solid #f1f5f9;
+    z-index: 200;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: flex;
+}
+
+/* Dropdown Items */
+.dropdown-item {
+    padding: 10px 20px;
+    text-decoration: none;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+    /* Prevent text wrapping */
+    text-align: left;
+    /* Horizontal text */
+}
+
+.dropdown-item:hover {
+    background-color: #f0f9ff;
+    color: var(--primary-dark);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* main Section */
+.main {
     padding: 80px 0;
     display: flex;
     align-items: center;
@@ -115,7 +194,7 @@
     background: linear-gradient(135deg, var(--white) 60%, var(--bg-surface) 40%);
 }
 
-.hero-text {
+.main-text {
     flex: 1;
 }
 
@@ -131,7 +210,7 @@
     margin-bottom: 20px;
 }
 
-.hero-title {
+.main-title {
     font-size: 3.5rem;
     line-height: 1.2;
     color: var(--text-main);

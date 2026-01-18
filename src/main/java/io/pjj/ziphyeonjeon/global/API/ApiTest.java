@@ -20,10 +20,10 @@ class ApiTest {
             testprop.load(input);
         }
 
-        String serviceKey = testprop.getProperty("");
+        String serviceKey = testprop.getProperty("DISASTER_SERVICE_KEY");
 
         // API 호출 URL
-        String ApiUrl = "https://" +
+        String ApiUrl = "https://www.safetydata.go.kr/V2/api/DSSP-IF-10430" +
                 "?serviceKey=" + serviceKey;
 
         URI uri = new URI(ApiUrl);
