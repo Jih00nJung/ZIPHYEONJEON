@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import RiskAnalysis from "./RiskAnalysis/RiskAnalysis";
+
 import Ziphyeonjeon from "./Ziphyeonjeon"
+import RiskInquiry from "./RiskAnalysis/RiskInquiry";
+import RiskAnalysis from "./RiskAnalysis/RiskAnalysis";
 
 // router 설정 페이지입니다. 라우터 연결만!!
 
@@ -10,8 +12,9 @@ function App() {
             <Routes>
                 <Route path="/" element={<Ziphyeonjeon />} />
 
-                {/*RiskAnalysis router*/}
-                <Route path="/RiskAnalysis" element={<RiskAnalysis />} />
+                {/* RiskAnalysis */}
+                <Route path="/riskInquiry" element={<RiskInquiry />} />
+                <Route path="/riskAnalysis" element={<RiskAnalysis />} />
             </Routes>
         </BrowserRouter>
     );

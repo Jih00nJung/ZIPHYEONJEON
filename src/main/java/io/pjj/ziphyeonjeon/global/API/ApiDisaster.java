@@ -1,11 +1,10 @@
 package io.pjj.ziphyeonjeon.global.API;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
 import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 
 // 할 일
 // 1. API 데이터를 캐싱 처리하기
@@ -15,59 +14,24 @@ import java.util.Properties;
 // 하루에 한 번 로컬 DB에 전체 데이터를 저장해서 캐싱하는 방법으로 사용해야 할 듯?
 // 추가적으로 스프링부트에는 @Cashable 어노테이션으로 캐싱할 수 있다고 한다. 추후 찾아보자
 
-
+@Component
 public class ApiDisaster {
-    public static void main(String[] args) throws Exception {
 
-        // application-local.properties 파일 로드
-        Properties prop = new Properties();
-        try (InputStream input = ApiTest.class.getClassLoader().getResourceAsStream("application-local.properties")) {
-            if (input == null) {
-                System.err.println("오류: application-local.properties 파일을 찾을 수 없습니다.");
-                return;
-            }
-            prop.load(input);
-        }
+    @Value("${DISASTER_SERVICE_KEY}")
+    private String serviceKey;
 
-        String serviceKey = prop.getProperty("DISASTER_SERVICE_KEY");
+    private final RestTemplate restTemplate = new RestTemplate();
 
-        // API 호출 URL
-        String urlDisaster = "https://www.safetydata.go.kr/V2/api/DSSP-IF-10430" +
-                "?serviceKey=" + serviceKey +
-                "&numOfRows=10" +
-                "&pageNo=1";
+    public String fetchAllDisasterData() {
 
-        URI uri = new URI(urlDisaster);
-        URL url = uri.toURL();
+        String BASE_URL = "https://www.safetydata.go.kr/V2/api/DSSP-IF-10430";
+        String url = BASE_URL + "?serviceKey=" + serviceKey + "&numOfRows=1000&pageNo=1";
 
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-type", "application/json");
-
-        System.out.println("요청 URL: " + url);
-
-        // 응답
-        int responseCode = connection.getResponseCode();
-        try (InputStream is = (responseCode >= 200 && responseCode <= 300)
-                ? connection.getInputStream()
-                : connection.getErrorStream()) {
-
-            if (is == null) {
-                System.err.println("응답을 읽을 수 없습니다.");
-                return;
-            }
-
-            byte[] rawBytes = is.readAllBytes();
-            String result = new String(rawBytes, StandardCharsets.UTF_8);
-
-            // 응답 출력
-            System.out.println("응답 코드: " + responseCode);
-            System.out.println("---------------------------------------");
-            System.out.println("최종 결과:");
-            System.out.println(result);
-            System.out.println("---------------------------------------");
-        } finally {
-            connection.disconnect();
+        try {
+            System.out.println("API 호출중");
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            return "{\"error\": \"API 호출 실패: " + e.getMessage() + "\"}";
         }
     }
 }

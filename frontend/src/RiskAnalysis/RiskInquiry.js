@@ -1,0 +1,182 @@
+import React, {useState} from 'react';
+import axios from 'axios';
+import './RiskInquiry.css';
+
+import MainLayout from "../layouts/MainLayout";
+import {
+    IoSearchOutline,
+    IoCloudUploadOutline,
+    IoShieldCheckmarkOutline,
+    IoCheckmark,
+    IoArrowForwardOutline
+} from "react-icons/io5";
+
+const RiskInquiry = () => {
+
+    const [address, setAddress] = useState('');
+    const addressButton = async () => {
+        if (!address.trim()) return;
+
+        try {
+            const response = await axios.get(`http://localhost:8080/api/risk/${address}`);
+            console.log("백엔드 응답:", response.data);
+        } catch (error) {
+            console.error("데이터 요청 실패:", error);
+        }
+    }
+
+    // 툴팁 팝업
+    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+    const handleMouseEnter = () => setIsTooltipVisible(true);
+    const handleMouseLeave = () => setIsTooltipVisible(false);
+
+    return (
+        <MainLayout>
+
+            <div className="risk-inquiry-page">
+
+                {/* Main Content */}
+                <main className="main-content">
+                    <section className="main-section">
+                        <div className="main-bg-blur"></div>
+                        <span className="badge">
+                        <IoShieldCheckmarkOutline size={14}/> 안심 분석
+                        </span>
+                        <h2 className="title">종합 위험도 분석하기</h2>
+                        <p className="description">
+                            부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br/>
+                            집현전의 AI가 법적 및 시세 위험을 분석해 드립니다.
+                        </p>
+                    </section>
+
+                    <div className="form-container">
+                        <div className="card">
+                            <div className="card-decoration"></div>
+                            <form className="analysis-form" onSubmit={(e) => {
+                                e.preventDefault();
+                                addressButton();
+                            }}>
+                                {/* 1: 부동산 주소 */}
+                                <div className="form-step">
+                                    <div className="label-row">
+                                        <label className="input-label">
+                                            <span className="step-num">1</span> 부동산 주소
+                                        </label>
+                                        <span className="helper-text-link">지도 열기</span>
+                                    </div>
+                                    <div className="search-input-wrapper">
+                                        <IoSearchOutline className="search-icon"/>
+                                        <input
+                                            type="text"
+                                            placeholder="도로명주소 또는 지번주소를 입력해주세요. 예) 한강대로 405"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                        />
+                                        <button type="button" className="search-btn" onClick={addressButton}>검색</button>
+                                    </div>
+                                </div>
+
+                                <hr className="form-divider"/>
+
+                                {/* 2: 등기부등본 업로드 */}
+                                <div className="form-step">
+                                    <div className="label-row">
+                                        <label className="input-label">
+                                            <span className="step-num">2</span> 등기부등본 업로드
+                                            <span className="tag-required">필수</span>
+                                        </label>
+                                        <div className="tooltip-container">
+                                            <span className="tooltip-trigger"
+                                                  onMouseEnter={handleMouseEnter}
+                                                  onMouseLeave={handleMouseLeave}>등기부등본은 왜요?</span>
+
+                                            {isTooltipVisible && (
+                                                <div className="tooltip-box">
+                                                    권리 분석을 위해 필요한 서류입니다.
+                                                </div>
+                                            )}
+                                        </div>
+
+                                    </div>
+                                    <div className="upload-box">
+                                        <input type="file" className="file-input"/>
+                                        <div className="upload-content">
+                                            <div className="upload-icon-circle">
+                                                <IoCloudUploadOutline size={30}/>
+                                            </div>
+                                            <h3>업로드하려면 클릭하거나 파일을 끌어오세요.</h3>
+                                            <p>PDF, JPG, PNG 파일 (10MB 이하)</p>
+                                            <div className="select-btn">파일 선택</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr className="form-divider"/>
+
+                                {/* 3: 약관 동의 */}
+                                <div className="form-step">
+                                    <label className="input-label">
+                                        <span className="step-num">3</span> 약관 동의
+                                    </label>
+                                    <div className="consent-group">
+                                        <ConsentItem
+                                            title="전세가율 분석"
+                                            desc="시세 데이터를 바탕으로 매물의 안전성을 진단합니다."
+                                            essential={true}
+                                        />
+                                        <ConsentItem
+                                            title="부동산 재해 위험 정보 조회 동의"
+                                            desc="정부 공공 데이터를 활용하여 해당 위치의 침수 및 화재 이력을 확인합니다."
+                                            essential={false}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="submit-section">
+                                    <button type="button" className="submit-btn">
+                                        <span>위험 분석 시작하기</span>
+                                        <IoArrowForwardOutline size={20}/>
+                                    </button>
+                                    <p className="terms-text">
+
+                                        시작을 클릭하면 <a href="#">서비스 약관</a>에 동의하게 됩니다.
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </main>
+            </div>
+
+        </MainLayout>
+    );
+};
+
+// Sub-components for cleaner code
+const ConsentItem = ({title, desc, essential}) => (
+    <label className="consent-item">
+        <div className="checkbox-wrapper">
+            <input type="checkbox" defaultChecked/>
+            <span className="custom-checkbox"><IoCheckmark/></span>
+        </div>
+        <div className="consent-text">
+            <div className="consent-header">
+                <p className="consent-title">{title}</p>
+                <span className={`tag-${essential ? 'essential' : 'optional'}`}>
+          {essential ? '필수' : '선택'}
+        </span>
+            </div>
+            <p className="consent-desc">{desc}</p>
+        </div>
+    </label>
+);
+
+const FeatureItem = ({icon, text, color}) => (
+    <div className="feature-item">
+        <div className={`feature-icon icon-${color}`}>{icon}</div>
+        <span>{text}</span>
+    </div>
+);
+
+export default RiskInquiry;
