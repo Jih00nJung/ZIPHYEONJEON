@@ -21,6 +21,10 @@ public class MolitAptCsvIngestService {
 
     private final MolitAptSaleRawRepository saleRepo;
     private final MolitAptRentRawRepository rentRepo;
+    private final MolitVillaRentRawRepository villaRentRepo;
+    private final MolitVillaSaleRawRepository villaSaleRepo;
+    private final MolitOfficetelRentRawRepository officetelRentRepo;
+    private final MolitOfficetelSaleRawRepository officetelSaleRepo;
 
     @Value("${molit.ingest.root:data/molit}")
     private String ingestRoot;
@@ -37,18 +41,271 @@ public class MolitAptCsvIngestService {
 
         Files.walk(root)
                 .filter(p -> p.toString().endsWith(".csv"))
-                .filter(p -> p.toString().contains(File.separator + "apt" + File.separator))
+                .filter(p -> {
+                    String s = p.toString();
+                    // 이번 요청사항: 아파트는 제외하고 빌라/오피스텔만 포함
+                    if (s.contains(File.separator + "apt" + File.separator))
+                        return false;
+                    return s.contains(File.separator + "villa" + File.separator) ||
+                            s.contains(File.separator + "officetel" + File.separator);
+                })
                 .forEach(p -> {
                     try {
-                        if (p.toString().contains(File.separator + "sale" + File.separator)) {
-                            ingestAptSale(p);
-                        } else if (p.toString().contains(File.separator + "rent" + File.separator)) {
-                            ingestAptRent(p);
+                        String s = p.toString();
+                        if (s.contains(File.separator + "villa" + File.separator)) {
+                            if (s.contains(File.separator + "sale" + File.separator))
+                                ingestVillaSale(p);
+                            else if (s.contains(File.separator + "rent" + File.separator))
+                                ingestVillaRent(p);
+                        } else if (s.contains(File.separator + "officetel" + File.separator)) {
+                            if (s.contains(File.separator + "sale" + File.separator))
+                                ingestOfficetelSale(p);
+                            else if (s.contains(File.separator + "rent" + File.separator))
+                                ingestOfficetelRent(p);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException("INGEST FAIL: " + p + " / " + e.getMessage(), e);
                     }
                 });
+    }
+
+    // ... (helper methods like parseYear, parseMonth, openReader, findHeader remain
+    // matching original if not shown here)
+
+    // [New Methods for Villa/Officetel]
+
+    private void ingestVillaSale(Path csvPath) throws Exception {
+        int year = parseYear(csvPath);
+        int month = parseMonth(csvPath);
+        List<MolitVillaSaleRawEntity> batch = new ArrayList<>();
+        int totalCount = 0;
+
+        try (BufferedReader br = openReader(csvPath)) {
+            Map<String, Integer> header = findHeader(br, "거래금액(만원)");
+            if (header == null)
+                throw new IllegalStateException("VILLA SALE HEADER NOT FOUND");
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<String> row = splitCsvLine(line);
+                String no = row.size() > 0 ? row.get(0) : null;
+                if (no == null || !no.trim().matches("\\d+"))
+                    continue;
+
+                MolitVillaSaleRawEntity e = new MolitVillaSaleRawEntity();
+                e.setDataYear(year);
+                e.setDataMonth(month);
+                e.setSourceFile(csvPath.toString());
+
+                e.setSigungu(get(header, row, "시군구"));
+                e.setBeonji(get(header, row, "번지"));
+                e.setBonbun(get(header, row, "본번"));
+                e.setBubun(get(header, row, "부번"));
+                e.setBuildingName(get(header, row, "건물명"));
+                e.setExclArea(toDecimal(get(header, row, "전용면적(㎡)", "전용면적")));
+                e.setLandRightArea(toDecimal(get(header, row, "대지권면적(㎡)", "대지권면적")));
+                e.setContractYm(toInt(get(header, row, "계약년월")));
+                e.setContractDay(toInt(get(header, row, "계약일")));
+                e.setDealAmountMan(toLongAmount(get(header, row, "거래금액(만원)")));
+                e.setFloorNo(toInt(get(header, row, "층")));
+                e.setBuyerType(get(header, row, "매수자"));
+                e.setSellerType(get(header, row, "매도자"));
+                e.setBuiltYear(toInt(get(header, row, "건축년도")));
+                e.setRoadName(get(header, row, "도로명"));
+                e.setCancelReason(get(header, row, "해제사유발생일"));
+                e.setDealType(get(header, row, "거래유형"));
+                e.setBrokerLoc(get(header, row, "중개사소재지"));
+                e.setRegDate(get(header, row, "등기일자"));
+
+                batch.add(e);
+                totalCount++;
+
+                if (batch.size() >= 2000) {
+                    villaSaleRepo.saveAll(batch);
+                    batch.clear();
+                    System.out.println("[MOLIT VILLA SALE] Processing " + csvPath.getFileName() + " ... " + totalCount
+                            + " saved.");
+                }
+            }
+        }
+        if (!batch.isEmpty())
+            villaSaleRepo.saveAll(batch);
+    }
+
+    private void ingestVillaRent(Path csvPath) throws Exception {
+        int year = parseYear(csvPath);
+        int month = parseMonth(csvPath);
+        List<MolitVillaRentRawEntity> batch = new ArrayList<>();
+        int totalCount = 0;
+
+        try (BufferedReader br = openReader(csvPath)) {
+            Map<String, Integer> header = findHeader(br, "보증금(만원)");
+            if (header == null)
+                header = findHeader(br, "보증금액(만원)");
+            if (header == null)
+                throw new IllegalStateException("VILLA RENT HEADER NOT FOUND");
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<String> row = splitCsvLine(line);
+                String no = row.size() > 0 ? row.get(0) : null;
+                if (no == null || !no.trim().matches("\\d+"))
+                    continue;
+
+                MolitVillaRentRawEntity e = new MolitVillaRentRawEntity();
+                e.setDataYear(year);
+                e.setDataMonth(month);
+                e.setSourceFile(csvPath.toString());
+
+                e.setSigungu(get(header, row, "시군구"));
+                e.setBeonji(get(header, row, "번지"));
+                e.setBonbun(get(header, row, "본번"));
+                e.setBubun(get(header, row, "부번"));
+                e.setBuildingName(get(header, row, "건물명"));
+                e.setRentType(get(header, row, "전월세구분"));
+                e.setExclArea(toDecimal(get(header, row, "전용면적(㎡)", "전용면적")));
+                e.setContractYm(toInt(get(header, row, "계약년월")));
+                e.setContractDay(toInt(get(header, row, "계약일")));
+                e.setDepositMan(toLongAmount(get(header, row, "보증금(만원)", "보증금액(만원)")));
+                e.setMonthlyRentMan(toLongAmount(get(header, row, "월세(만원)", "월세금(만원)")));
+                e.setFloorNo(toInt(get(header, row, "층")));
+                e.setBuiltYear(toInt(get(header, row, "건축년도")));
+                e.setRoadName(get(header, row, "도로명"));
+                e.setContractPeriod(get(header, row, "계약기간"));
+                e.setContractType(get(header, row, "계약구분"));
+                e.setRenewalReqRight(get(header, row, "갱신요구권사용"));
+                e.setPrevContract(get(header, row, "종전계약")); // 원문 그대로
+                e.setHouseType(get(header, row, "주택유형")); // 연립다세대 등
+
+                batch.add(e);
+                totalCount++;
+
+                if (batch.size() >= 2000) {
+                    villaRentRepo.saveAll(batch);
+                    batch.clear();
+                    System.out.println("[MOLIT VILLA RENT] Processing " + csvPath.getFileName() + " ... " + totalCount
+                            + " saved.");
+                }
+            }
+        }
+        if (!batch.isEmpty())
+            villaRentRepo.saveAll(batch);
+    }
+
+    private void ingestOfficetelSale(Path csvPath) throws Exception {
+        int year = parseYear(csvPath);
+        int month = parseMonth(csvPath);
+        List<MolitOfficetelSaleRawEntity> batch = new ArrayList<>();
+        int totalCount = 0;
+
+        try (BufferedReader br = openReader(csvPath)) {
+            Map<String, Integer> header = findHeader(br, "거래금액(만원)");
+            if (header == null)
+                throw new IllegalStateException("OFFICETEL SALE HEADER NOT FOUND");
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<String> row = splitCsvLine(line);
+                String no = row.size() > 0 ? row.get(0) : null;
+                if (no == null || !no.trim().matches("\\d+"))
+                    continue;
+
+                MolitOfficetelSaleRawEntity e = new MolitOfficetelSaleRawEntity();
+                e.setDataYear(year);
+                e.setDataMonth(month);
+                e.setSourceFile(csvPath.toString());
+
+                e.setSigungu(get(header, row, "시군구"));
+                e.setBeonji(get(header, row, "번지"));
+                e.setBonbun(get(header, row, "본번"));
+                e.setBubun(get(header, row, "부번"));
+                e.setComplexName(get(header, row, "단지명"));
+                e.setExclArea(toDecimal(get(header, row, "전용면적(㎡)", "전용면적")));
+                e.setContractYm(toInt(get(header, row, "계약년월")));
+                e.setContractDay(toInt(get(header, row, "계약일")));
+                e.setDealAmountMan(toLongAmount(get(header, row, "거래금액(만원)")));
+                e.setFloorNo(toInt(get(header, row, "층")));
+                e.setBuyerType(get(header, row, "매수자"));
+                e.setSellerType(get(header, row, "매도자"));
+                e.setBuiltYear(toInt(get(header, row, "건축년도")));
+                e.setRoadName(get(header, row, "도로명"));
+                e.setCancelReason(get(header, row, "해제사유발생일"));
+                e.setDealType(get(header, row, "거래유형"));
+                e.setBrokerLoc(get(header, row, "중개사소재지"));
+
+                batch.add(e);
+                totalCount++;
+
+                if (batch.size() >= 2000) {
+                    officetelSaleRepo.saveAll(batch);
+                    batch.clear();
+                    System.out.println("[MOLIT OFFICETEL SALE] Processing " + csvPath.getFileName() + " ... "
+                            + totalCount + " saved.");
+                }
+            }
+        }
+        if (!batch.isEmpty())
+            officetelSaleRepo.saveAll(batch);
+    }
+
+    private void ingestOfficetelRent(Path csvPath) throws Exception {
+        int year = parseYear(csvPath);
+        int month = parseMonth(csvPath);
+        List<MolitOfficetelRentRawEntity> batch = new ArrayList<>();
+        int totalCount = 0;
+
+        try (BufferedReader br = openReader(csvPath)) {
+            Map<String, Integer> header = findHeader(br, "보증금(만원)");
+            if (header == null)
+                header = findHeader(br, "보증금액(만원)");
+            if (header == null)
+                throw new IllegalStateException("OFFICETEL RENT HEADER NOT FOUND");
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                List<String> row = splitCsvLine(line);
+                String no = row.size() > 0 ? row.get(0) : null;
+                if (no == null || !no.trim().matches("\\d+"))
+                    continue;
+
+                MolitOfficetelRentRawEntity e = new MolitOfficetelRentRawEntity();
+                e.setDataYear(year);
+                e.setDataMonth(month);
+                e.setSourceFile(csvPath.toString());
+
+                e.setSigungu(get(header, row, "시군구"));
+                e.setBeonji(get(header, row, "번지"));
+                e.setBonbun(get(header, row, "본번"));
+                e.setBubun(get(header, row, "부번"));
+                e.setComplexName(get(header, row, "단지명"));
+                e.setRentType(get(header, row, "전월세구분"));
+                e.setExclArea(toDecimal(get(header, row, "전용면적(㎡)", "전용면적")));
+                e.setContractYm(toInt(get(header, row, "계약년월")));
+                e.setContractDay(toInt(get(header, row, "계약일")));
+                e.setDepositMan(toLongAmount(get(header, row, "보증금(만원)", "보증금액(만원)")));
+                e.setMonthlyRentMan(toLongAmount(get(header, row, "월세(만원)", "월세금(만원)")));
+                e.setFloorNo(toInt(get(header, row, "층")));
+                e.setBuiltYear(toInt(get(header, row, "건축년도")));
+                e.setRoadName(get(header, row, "도로명"));
+                e.setContractPeriod(get(header, row, "계약기간"));
+                e.setContractType(get(header, row, "계약구분"));
+                e.setRenewalReqRight(get(header, row, "갱신요구권사용"));
+                e.setPrevContract(get(header, row, "종전계약"));
+                e.setPrevMonthlyRentMan(toLongAmount(get(header, row, "종전월세(만원)", "종전월세금(만원)")));
+
+                batch.add(e);
+                totalCount++;
+
+                if (batch.size() >= 2000) {
+                    officetelRentRepo.saveAll(batch);
+                    batch.clear();
+                    System.out.println("[MOLIT OFFICETEL RENT] Processing " + csvPath.getFileName() + " ... "
+                            + totalCount + " saved.");
+                }
+            }
+        }
+        if (!batch.isEmpty())
+            officetelRentRepo.saveAll(batch);
     }
 
     private int parseYear(Path p) {
