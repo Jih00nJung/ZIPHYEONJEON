@@ -5,8 +5,12 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "DISASTER_API_CACHE")
-public class DisasterApiCache {
+@Table(name = "DISASTER_CACHE")
+public class DisasterCache {
+
+    protected DisasterCache() {
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CACHE_ID")
@@ -34,8 +38,8 @@ public class DisasterApiCache {
     @Column(name = "FETCHED_AT")
     private LocalDateTime fetchedAt;
 
-    public DisasterApiCache(String address, String lat, String lng,
-                            String type, String designReason, String regTime) {
+    public DisasterCache(String address, String lat, String lng,
+                         String type, String designReason, String regTime) {
         this.address = address;
         this.lat = lat;
         this.lng = lng;
@@ -78,13 +82,4 @@ public class DisasterApiCache {
         return fetchedAt;
     }
 
-
-    // Setter
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public void setFetchedAt(LocalDateTime fetchedAt) {
-        this.fetchedAt = fetchedAt;
-    }
 }

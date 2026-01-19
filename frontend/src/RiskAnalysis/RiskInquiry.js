@@ -18,8 +18,13 @@ const RiskInquiry = () => {
         if (!address.trim()) return;
 
         try {
-            const response = await axios.get(`http://localhost:8080/api/risk/${address}`);
-            console.log("백엔드 응답:", response.data);
+            console.log(`${address}에 대한 데이터 요청을 시작합니다...`);
+            const [disasterRes, buildingRes] = await Promise.all([
+                // axios.get(`http://localhost:8080/api/risk/disaster/${address}`),
+                axios.get(`http://localhost:8080/api/risk/building/${address}`)
+            ]);
+            console.log("재해 위험 정보:", disasterRes.data);
+            console.log("건축물 대장 정보:", buildingRes.data);
         } catch (error) {
             console.error("데이터 요청 실패:", error);
         }
@@ -45,7 +50,7 @@ const RiskInquiry = () => {
                         <h2 className="title">종합 위험도 분석하기</h2>
                         <p className="description">
                             부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br/>
-                            집현전의 AI가 법적 및 시세 위험을 분석해 드립니다.
+                            집현전이 법적 및 시세 위험을 분석해 드립니다.
                         </p>
                     </section>
 
@@ -68,7 +73,7 @@ const RiskInquiry = () => {
                                         <IoSearchOutline className="search-icon"/>
                                         <input
                                             type="text"
-                                            placeholder="도로명주소 또는 지번주소를 입력해주세요. 예) 한강대로 405"
+                                            placeholder="지번주소를 입력하세요. 예) 서울특별시 용산구 한강대로 405"
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
                                         />

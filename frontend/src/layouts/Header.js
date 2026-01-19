@@ -32,7 +32,7 @@ const Header = () => {
         }
     ];
 
-    const refreshDisasterButton = async () => {
+    const refreshApiButton = async () => {
         try {
             const response = await axios.get(`http://localhost:8080/api/risk/refresh-disaster`);
             console.log("/refresh-disaster:", response.data);
@@ -71,7 +71,7 @@ const Header = () => {
 
                 <div className="header-buttons">
 
-                    <a onClick={refreshDisasterButton}>
+                    <a onClick={refreshApiButton}>
                         /refresh-disaster
                     </a>
 
