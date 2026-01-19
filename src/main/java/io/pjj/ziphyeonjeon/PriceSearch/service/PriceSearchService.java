@@ -20,8 +20,7 @@ public class PriceSearchService {
             VworldGeocodeClient vworldGeocodeClient,
             VworldSearchClient vworldSearchClient,
             VworldOfficialLandPriceClient vworldOfficialLandPriceClient,
-            SeoulOpenApiClient seoulOpenApiClient
-    ) {
+            SeoulOpenApiClient seoulOpenApiClient) {
         this.vworldGeocodeClient = vworldGeocodeClient;
         this.vworldSearchClient = vworldSearchClient;
         this.vworldOfficialLandPriceClient = vworldOfficialLandPriceClient;
@@ -64,7 +63,7 @@ public class PriceSearchService {
                 1,
                 50,
                 rcptYr, // 접수년도
-                cggCd   // 자치구코드 등
+                cggCd // 자치구코드 등
         );
     }
 }
