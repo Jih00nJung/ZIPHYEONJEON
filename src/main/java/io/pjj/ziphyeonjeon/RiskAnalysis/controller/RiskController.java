@@ -7,8 +7,11 @@ import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/risk")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class RiskController {
 
     private final RiskService riskService;
@@ -20,18 +23,29 @@ public class RiskController {
     // DisasterApiCache DB 동기화
     @GetMapping("/refresh-disaster")
     public ResponseEntity<String> refreshDisaster() {
-        riskService.refreshApiCache();
-        return ResponseEntity.ok("데이터 동기화 프로세스가 완료되었습니다. 콘솔 로그를 확인하세요.");
+        riskService.refreshDisasterApiCache();
+        return ResponseEntity.ok("재난 데이터 동기화 프로세스가 완료되었습니다. 콘솔 로그를 확인하세요.");
     }
 
-    // 종합 위험도 분석 - 부동산 주소
-    @GetMapping("/{address}")
-    public ResponseEntity<RiskResponseDTO> searchRiskAddress(@PathVariable String address) {
-        System.out.println("/api/risk/{address}: " + address);
+    // 재해 위험 정보 조회
+    @GetMapping("/disaster/{address}")
+    public ResponseEntity<RiskResponseDTO> searchDisaster(@PathVariable String address) {
+        System.out.println("/api/risk/disaster/{address}: " + address);
 
-        RiskResponseDTO response = riskService.searchAddress(address);
+        RiskResponseDTO<RiskResponseDTO.DisasterResponse> response = riskService.searchDisasterAddress(address);
         return ResponseEntity.ok(response);
     }
+
+    // 건축물대장 정보 조회
+    @GetMapping("/building/{address}")
+    public ResponseEntity<RiskResponseDTO<RiskResponseDTO.BuildingResponse>> analyzeBuilding(@PathVariable String address) {
+        System.out.println("/api/risk/building/{address}: " + address);
+
+        RiskResponseDTO<RiskResponseDTO.BuildingResponse> response = riskService.analyzeBuilding(address);
+
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/riskAnalyze")
     public ResponseEntity<Risk> analyze(@RequestBody RiskRequestDTO.DisasterRequest request) {

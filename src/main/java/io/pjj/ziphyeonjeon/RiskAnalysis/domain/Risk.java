@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "RISK_ANALYSIS_RESULT")
 public class Risk {
 
+    protected Risk() {
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "RISK_RESULT_ID")
@@ -84,24 +87,4 @@ public class Risk {
         return legalAnalysisResult;
     }
 
-    // Setter
-    public void setTotalSafetyScore(BigDecimal totalSafetyScore) {
-        this.totalSafetyScore = totalSafetyScore;
-    }
-
-    public void setRegisterRiskScore(BigDecimal registerRiskScore) {
-        this.registerRiskScore = registerRiskScore;
-    }
-
-    public void setJeonseRiskScore(BigDecimal jeonseRiskScore) {
-        this.jeonseRiskScore = jeonseRiskScore;
-    }
-
-    public void setFinalGrade(String finalGrade) {
-        this.finalGrade = finalGrade;
-    }
-
-    public void setLegalAnalysisResult(String legalAnalysisResult) {
-        this.legalAnalysisResult = legalAnalysisResult;
-    }
 }
