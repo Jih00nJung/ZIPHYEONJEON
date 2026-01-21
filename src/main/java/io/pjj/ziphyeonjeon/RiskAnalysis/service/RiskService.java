@@ -1,125 +1,71 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.service;
 
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.BuildingTitleDTO;
-import io.pjj.ziphyeonjeon.global.API.ApiBuilding;
-import io.pjj.ziphyeonjeon.global.config.AddressCodeMap;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import tools.jackson.core.type.TypeReference;
+import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import io.pjj.ziphyeonjeon.RiskAnalysis.repository.RiskUploadRepository;
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.BuildingDTO;
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.DisasterDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
-import io.pjj.ziphyeonjeon.RiskAnalysis.repository.RiskRepository;
-import io.pjj.ziphyeonjeon.RiskAnalysis.domain.Risk;
-
-import io.pjj.ziphyeonjeon.RiskAnalysis.domain.DisasterCache;
-import io.pjj.ziphyeonjeon.RiskAnalysis.repository.DisasterCacheRepository;
+import io.pjj.ziphyeonjeon.RiskAnalysis.entity.RiskUpload;
+import io.pjj.ziphyeonjeon.global.API.ApiBuilding;
 import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
+import io.pjj.ziphyeonjeon.global.config.AddressCodeMap;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static reactor.netty.http.HttpConnectionLiveness.log;
 
 @Service
 public class RiskService {
 
+    private final RiskUploadRepository riskUploadRepository;
     private final ObjectMapper objectMapper;
-    private final RiskRepository riskRepository;
 
-    private final DisasterCacheRepository disasterRepository;
     private final ApiDisaster apiDisaster;
     private final ApiBuilding apiBuilding;
     private final AddressCodeMap addressCodeMap;
 
-    public RiskService(RiskRepository riskRepository, DisasterCacheRepository disasterRepository,
-                       ApiDisaster apiDisaster, ApiBuilding apiBuilding, AddressCodeMap addressCodeMap,
-                       ObjectMapper objectMapper) {
-        this.riskRepository = riskRepository;
-        this.disasterRepository = disasterRepository;
+    public RiskService(RiskUploadRepository riskUploadRepository, ObjectMapper objectMapper,
+                       ApiDisaster apiDisaster, ApiBuilding apiBuilding, AddressCodeMap addressCodeMap
+    ) {
+        this.riskUploadRepository = riskUploadRepository;
+        this.objectMapper = objectMapper;
+
         this.apiDisaster = apiDisaster;
         this.apiBuilding = apiBuilding;
         this.addressCodeMap = addressCodeMap;
-        this.objectMapper = objectMapper;
     }
 
-
-    // 재해 API 갱신
-    @Transactional
-    public void refreshDisasterApiCache() {
-        try {
-            String rawData = apiDisaster.fetchAllDisasterData();
-
-            JsonNode root = objectMapper.readTree(rawData);
-            JsonNode items = root.path("body");
-
-            if (items.isMissingNode() || !items.isArray()) {
-                System.out.println("파싱 오류: 데이터가 존재하지 않거나 배열 형식이 아닙니다.");
-                return;
-            }
-
-            disasterRepository.truncateTable();
-
-            List<DisasterCache> cacheList = new ArrayList<>();
-            for (JsonNode item : items) {
-                DisasterCache entity = new DisasterCache(
-                        item.path("DST_RSK_RGN_RPRS_ADDR").asText("주소 없음"),
-                        item.path("LAT").asText("0.0"),
-                        item.path("LOT").asText("0.0"),
-                        item.path("TYPE").asText("미지정"),
-                        item.path("DSGN_RSN").asText("내용 없음"),
-                        item.path("REG_DT").asText("")
-                );
-                cacheList.add(entity);
-            }
-
-            disasterRepository.saveAll(cacheList);
-            System.out.println("성공: " + cacheList.size() + "건의 재난 API 데이터가 동기화되었습니다.");
-
-        } catch (Exception e) {
-            throw new RuntimeException("API 데이터 파싱 및 저장 중 오류 발생: " + e.getMessage());
-        }
-    }
-
-    // DISASTER_CACHE DB 조회 + 필터링
-    @Transactional(readOnly = true)
-    public RiskResponseDTO<RiskResponseDTO.DisasterResponse> searchDisasterAddress(String address) {
-        List<DisasterCache> entities = disasterRepository.findByAddressContaining(address);
-
-        List<RiskResponseDTO.DisasterResponse> disasterDtoList = entities.stream()
-                .map(entity -> new RiskResponseDTO.DisasterResponse(
-                        entity.getAddress(),
-                        entity.getLat(),
-                        entity.getLng(),
-                        entity.getType(),
-                        entity.getDesignReason(),
-                        entity.getRegTime()
-                ))
-                .collect(Collectors.toList());
-
-        return new RiskResponseDTO<>(
-                "SUCCESS",
-                entities.isEmpty() ? "검색 결과가 없습니다." : "조회 성공",
-                disasterDtoList
-        );
-    }
-
-    // 주소에서 시군구 추출
+    // 공용 - 주소에서 시군구, 번, 지 추출
     private Map<String, String> parseAddressDetails(String address) {
         Map<String, String> details = new HashMap<>();
         if (address == null || address.isBlank()) return details;
 
         String[] parts = address.split(" ");
+
+        if (parts.length >= 2) {
+            details.put("disasterRegion", parts[0] + " " + parts[1]);
+        } else {
+            details.put("disasterRegion", parts[0]);
+        }
+
         StringBuilder districtSb = new StringBuilder();
 
-        for (String part : parts) {
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
             districtSb.append(part).append(" ");
+
             if (part.endsWith("동") || part.endsWith("읍") || part.endsWith("면") ||
-                    part.endsWith("리") || part.endsWith("가")) {
+                    part.endsWith("리") || part.endsWith("가") || part.endsWith("로")) {
                 break;
-            }
-            if (part.endsWith("구") || part.endsWith("군")) {
             }
         }
         details.put("district", districtSb.toString().trim());
@@ -141,7 +87,7 @@ public class RiskService {
         return details;
     }
 
-    // 4자리 숫자 문자열로 변환
+    // 공용 - 번, 지 4자리 숫자 문자열로 변환
     private String formatToFourDigits(String str) {
         try {
             int num = Integer.parseInt(str);
@@ -151,35 +97,74 @@ public class RiskService {
         }
     }
 
-    // 건축물대장 데이터 추출
-    private List<BuildingTitleDTO> parseBuildingTitle(String jsonString) {
+    // 공용 - JSON 데이터 추출
+    public <T> List<T> parseApiData(String jsonString, Class<T> targetClass, String... paths) {
         if (jsonString == null || jsonString.isBlank()) return Collections.emptyList();
 
-        if (!jsonString.trim().startsWith("{")) {
-            System.err.println("API 응답 오류: " + jsonString);
-            return Collections.emptyList();
-        }
-
         try {
-            JsonNode root = objectMapper.readTree(jsonString);
-            JsonNode itemNode = root.path("response").path("body").path("items").path("item");
+            JsonNode node = objectMapper.readTree(jsonString);
 
-            if (itemNode.isMissingNode() || itemNode.isNull()) return Collections.emptyList();
+            for (String path : paths) {
+                node = node.path(path);
+            }
 
-            if (itemNode.isArray()) {
-                return objectMapper.convertValue(itemNode, new TypeReference<List<BuildingTitleDTO>>() {
-                });
+            if (node.isMissingNode() || node.isNull()) return Collections.emptyList();
+
+            if (node.isArray()) {
+                return objectMapper.convertValue(node,
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, targetClass));
             } else {
-                return List.of(objectMapper.convertValue(itemNode, BuildingTitleDTO.class));
+                return List.of(objectMapper.convertValue(node, targetClass));
             }
         } catch (Exception e) {
-            System.err.println("JSON 파싱 오류: " + e.getMessage());
+            log.error("JSON 파싱 중 오류 발생: {}", e.getMessage());
             return Collections.emptyList();
         }
     }
 
-    // 건축물대장 분석
-    public RiskResponseDTO<RiskResponseDTO.BuildingResponse> analyzeBuilding(String address) {
+    // 공용 - 파일 업로드
+    private final String uploadPath = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "uploads").toString();
+
+    @Transactional
+    public String saveFile(String address, MultipartFile file) throws IOException {
+        File directory = new File(uploadPath);
+        if (!directory.exists()) directory.mkdirs();
+
+        String originalName = file.getOriginalFilename();
+        String saveName = UUID.randomUUID().toString() + "_" + originalName;
+        Path targetPath = Paths.get(uploadPath, saveName);
+        file.transferTo(targetPath);
+
+        RiskUpload upload = new RiskUpload(address, saveName);
+        riskUploadRepository.save(upload);
+
+        return saveName;
+    }
+
+    // 재해 - 긴급재난문자API에 요청
+    public RiskResponseDTO<RiskResponseDTO.DisasterResponse> sendDisasterApi(String address) {
+        Map<String, String> addrDetails = parseAddressDetails(address);
+        String rgnNm = addrDetails.get("disasterRegion");
+
+        String rawData = apiDisaster.fetchAllDisasterData(rgnNm);
+        List<DisasterDTO> disasterList = parseApiData(rawData, DisasterDTO.class, "body");
+
+        List<RiskResponseDTO.DisasterResponse> disasterResults = disasterList.stream()
+                .filter(data -> data.EMRG_STEP_NM() != null && data.EMRG_STEP_NM().contains("재난"))
+                .map(data -> new RiskResponseDTO.DisasterResponse(
+                        data.RCPTN_RGN_NM(),
+                        data.EMRG_STEP_NM(),
+                        data.DST_SE_NM(),
+                        data.REG_YMD()
+                ))
+                .toList();
+
+        return new RiskResponseDTO<>("success", address + "의 재해 분석 완료", disasterResults);
+    }
+
+
+    // 건축물대장 - 건축물대장API에 요청
+    public RiskResponseDTO<RiskResponseDTO.BuildingResponse> sendBuildingApi(String address) {
         Map<String, String> addrDetails = parseAddressDetails(address);
         String district = addrDetails.get("district");
         String bun = addrDetails.get("bun");
@@ -187,22 +172,23 @@ public class RiskService {
 
         String code = addressCodeMap.getCode(district);
 
+        // 시군구, 법정동코드 분리
         if (code == null && district.contains(" ")) {
-            String cityAndGu = district.substring(0, district.lastIndexOf(" ")).trim();
-            code = addressCodeMap.getCode(cityAndGu);
+            String siGu = district.substring(0, district.lastIndexOf(" ")).trim();
+            code = addressCodeMap.getCode(siGu);
         }
-
         if (code == null) {
             return new RiskResponseDTO<>("fail",
-                    "법정동 코드를 찾을 수 없습니다: " + district, Collections.emptyList());
+                    "시군구, 법정동 코드를 찾을 수 없습니다: " + district, Collections.emptyList());
         }
 
         int SIGUNGU_END_INDEX = 5;
         String sigunguCode = code.substring(0, SIGUNGU_END_INDEX);
         String bjdongCode = code.substring(SIGUNGU_END_INDEX);
 
+        // 응답 데이터 출력
         Map<String, String> apiRawData = apiBuilding.fetchAllBuildingData(sigunguCode, bjdongCode, bun, ji);
-        List<BuildingTitleDTO> titles = parseBuildingTitle(apiRawData.get("title"));
+        List<BuildingDTO> titles = parseApiData(apiRawData.get("title"), BuildingDTO.class, "response", "body", "items", "item");
 
         List<String> reasons = new ArrayList<>();
 
@@ -215,20 +201,18 @@ public class RiskService {
                 reasons
         );
 
-        System.out.println("analyzeBuilding -> sigungu: " + sigunguCode + ", bjdong: " + bjdongCode + ", bun: " + bun + ", ji: " + ji);
-
-        return new RiskResponseDTO<>("success", "건축물대장 분석이 완료되었습니다.", List.of(buildingResult));
+        return new RiskResponseDTO<>("success", address + "의 건축물대장 분석 완료", List.of(buildingResult));
     }
 
-    // 건축물대장 점수 계산
-    private int calculateBuildingScore(List<BuildingTitleDTO> titles, List<String> factors) {
+    // 건축물대장 - 건축물대장 점수 계산
+    private int calculateBuildingScore(List<BuildingDTO> titles, List<String> factors) {
         int score = 100;
         if (titles.isEmpty()) {
             factors.add("조회된 건축물 정보가 없습니다.");
             return 0;
         }
 
-        BuildingTitleDTO title = titles.get(0);
+        BuildingDTO title = titles.get(0);
 
         // 위반건축물 여부 분석
         if ("1".equals(title.indictViolBldYn())) {
@@ -251,23 +235,5 @@ public class RiskService {
         return Math.max(score, 0);
     }
 
-    // 점수 계산
-    private BigDecimal calculateDisasterScore(String grade) {
-        if ("안전".equals(grade)) return new BigDecimal("100.00");
-        if ("주의".equals(grade)) return new BigDecimal("50.00");
-        return new BigDecimal("20.00");
-    }
 
-    // 점수 저장
-    public Risk scoreSave(Long propertyId, String disasterGrade) {
-        BigDecimal score = calculateDisasterScore(disasterGrade);
-        String finalGrade = (score.compareTo(new BigDecimal("70")) >= 0) ? "안전" : "위험";
-
-        Risk risk = new Risk(
-                propertyId,
-                score,
-                finalGrade,
-                disasterGrade);
-        return riskRepository.save(risk);
-    }
 }

@@ -1,23 +1,29 @@
 package io.pjj.ziphyeonjeon;
 
+import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
 import io.pjj.ziphyeonjeon.global.config.AddressCodeMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 class ApplicationTests {
 
-	@Test
-	void addressToCode() {
-		AddressCodeMap map = new AddressCodeMap();
-		map.init();
+    @Test
+    void apiTest() {
+        RestTemplate restTemplate = new RestTemplate();
+        ApiDisaster apiDisaster = new ApiDisaster(restTemplate);
 
-		String address = "서울특별시 강남구 개포동";
-		String code = map.getCode(address);
+        String serviceKey = "8Z1X40MD48205H28";
+        ReflectionTestUtils.setField(apiDisaster, "serviceKey", serviceKey);
 
-		System.out.println("검색 주소: [" + address + "]");
-		System.out.println("결과 코드: [" + code + "]");
+        String region = "서울특별시";
+        String result = apiDisaster.fetchAllDisasterData(region);
 
-		Assertions.assertEquals("1168010300", code);
-	}
-
+        // 4. 결과 출력
+        System.out.println("================ API RAW RESPONSE ================");
+        System.out.println(result);
+        System.out.println("==================================================");
+    }
 }
