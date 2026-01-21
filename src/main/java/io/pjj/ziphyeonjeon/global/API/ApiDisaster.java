@@ -10,12 +10,19 @@ public class ApiDisaster {
     @Value("${DISASTER_SERVICE_KEY}")
     private String serviceKey;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
-    public String fetchAllDisasterData() {
+    public ApiDisaster(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
-        String BASE_URL = "https://www.safetydata.go.kr/V2/api/DSSP-IF-10430";
-        String url = BASE_URL + "?serviceKey=" + serviceKey + "&numOfRows=1000&pageNo=1";
+    public String fetchAllDisasterData(String rgnNm) {
+
+        String BASE_URL = "https://www.safetydata.go.kr/V2/api/DSSP-IF-00247";
+
+        String url = BASE_URL + "?serviceKey=" + serviceKey
+                + "&rgnNm=" + rgnNm
+                + "&numOfRows=1000&pageNo=1&returnType=json";
 
         try {
             System.out.println("API 호출중");

@@ -14,13 +14,16 @@ import {
 const RiskInquiry = () => {
 
     const [address, setAddress] = useState('');
+    const [file, setFile] = useState(null);
+
+    // 주소 요청 버튼
     const addressButton = async () => {
         if (!address.trim()) return;
 
         try {
             console.log(`${address}에 대한 데이터 요청을 시작합니다...`);
             const [disasterRes, buildingRes] = await Promise.all([
-                // axios.get(`http://localhost:8080/api/risk/disaster/${address}`),
+                axios.get(`http://localhost:8080/api/risk/disaster/${address}`),
                 axios.get(`http://localhost:8080/api/risk/building/${address}`)
             ]);
             console.log("재해 위험 정보:", disasterRes.data);
@@ -29,6 +32,33 @@ const RiskInquiry = () => {
             console.error("데이터 요청 실패:", error);
         }
     }
+
+    // 파일 업로드
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!address.trim() || !file) {
+            alert("주소와 등기부등본을 모두 입력해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('address', address);
+        formData.append('file', file); // 'file'이라는 이름으로 전송
+
+        try {
+            const response = await axios.post('http://localhost:8080/api/risk/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            console.log("업로드 성공:", response.data);
+            alert("분석이 시작되었습니다!");
+        } catch (error) {
+            console.error("업로드 실패:", error);
+        }
+    };
 
     // 툴팁 팝업
     const [isTooltipVisible, setIsTooltipVisible] = useState(false);
@@ -66,6 +96,7 @@ const RiskInquiry = () => {
                                     <div className="label-row">
                                         <label className="input-label">
                                             <span className="step-num">1</span> 부동산 주소
+                                            <span className="tag-required">필수</span>
                                         </label>
                                         <span className="helper-text-link">지도 열기</span>
                                     </div>
@@ -104,12 +135,12 @@ const RiskInquiry = () => {
 
                                     </div>
                                     <div className="upload-box">
-                                        <input type="file" className="file-input"/>
+                                        <input type="file" className="file-input" onChange={handleFileChange} />
                                         <div className="upload-content">
                                             <div className="upload-icon-circle">
                                                 <IoCloudUploadOutline size={30}/>
                                             </div>
-                                            <h3>업로드하려면 클릭하거나 파일을 끌어오세요.</h3>
+                                            <h3>{file ? `선택된 파일: ${file.name}` : "업로드하려면 클릭하거나 파일을 끌어오세요."}</h3>
                                             <p>PDF, JPG, PNG 파일 (10MB 이하)</p>
                                             <div className="select-btn">파일 선택</div>
                                         </div>
@@ -138,7 +169,7 @@ const RiskInquiry = () => {
                                 </div>
 
                                 <div className="submit-section">
-                                    <button type="button" className="submit-btn">
+                                    <button type="button" className="submit-btn" onClick={handleSubmit}>
                                         <span>위험 분석 시작하기</span>
                                         <IoArrowForwardOutline size={20}/>
                                     </button>

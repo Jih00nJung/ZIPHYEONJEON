@@ -1,4 +1,4 @@
-package io.pjj.ziphyeonjeon.RiskAnalysis.domain;
+package io.pjj.ziphyeonjeon.RiskAnalysis.entity;
 
 import jakarta.persistence.*;
 

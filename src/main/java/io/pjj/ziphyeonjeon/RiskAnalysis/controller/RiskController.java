@@ -1,13 +1,12 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.controller;
 
-import io.pjj.ziphyeonjeon.RiskAnalysis.domain.Risk;
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskRequestDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/risk")
@@ -20,19 +19,12 @@ public class RiskController {
         this.riskService = riskService;
     }
 
-    // DisasterApiCache DB 동기화
-    @GetMapping("/refresh-disaster")
-    public ResponseEntity<String> refreshDisaster() {
-        riskService.refreshDisasterApiCache();
-        return ResponseEntity.ok("재난 데이터 동기화 프로세스가 완료되었습니다. 콘솔 로그를 확인하세요.");
-    }
-
     // 재해 위험 정보 조회
     @GetMapping("/disaster/{address}")
-    public ResponseEntity<RiskResponseDTO> searchDisaster(@PathVariable String address) {
+    public ResponseEntity<RiskResponseDTO<RiskResponseDTO.DisasterResponse>> searchDisaster(@PathVariable String address) {
         System.out.println("/api/risk/disaster/{address}: " + address);
 
-        RiskResponseDTO<RiskResponseDTO.DisasterResponse> response = riskService.searchDisasterAddress(address);
+        RiskResponseDTO<RiskResponseDTO.DisasterResponse> response = riskService.sendDisasterApi(address);
         return ResponseEntity.ok(response);
     }
 
@@ -41,19 +33,24 @@ public class RiskController {
     public ResponseEntity<RiskResponseDTO<RiskResponseDTO.BuildingResponse>> analyzeBuilding(@PathVariable String address) {
         System.out.println("/api/risk/building/{address}: " + address);
 
-        RiskResponseDTO<RiskResponseDTO.BuildingResponse> response = riskService.analyzeBuilding(address);
+        RiskResponseDTO<RiskResponseDTO.BuildingResponse> response = riskService.sendBuildingApi(address);
 
         return ResponseEntity.ok(response);
     }
 
+    // 등기부등본 업로드
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadRegistry(
+            @RequestParam("address") String address,
+            @RequestParam("file") MultipartFile file) {
 
-    @PostMapping("/riskAnalyze")
-    public ResponseEntity<Risk> analyze(@RequestBody RiskRequestDTO.DisasterRequest request) {
-        // Api 호출하고 등급 산정하기
+        try {
+            String savedFileName = riskService.saveFile(address, file);
 
-        // 테스트 데이터
-        Risk savedRisk = riskService.scoreSave(1L, "주의");
-
-        return ResponseEntity.ok(savedRisk);
+            return ResponseEntity.ok("파일 및 DB 저장 성공: " + savedFileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("파일 처리 중 오류 발생: " + e.getMessage());
+        }
     }
 }

@@ -2,10 +2,8 @@ package io.pjj.ziphyeonjeon.RiskAnalysis.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record BuildingTitleDTO(
+public record BuildingDTO(
         String bldNm,               // 건물명
         String platPlc,             // 대지위치
         String rnum,                // 순번
