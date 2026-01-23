@@ -14,9 +14,11 @@ import io.pjj.ziphyeonjeon.RiskAnalysis.entity.RiskUpload;
 import io.pjj.ziphyeonjeon.global.API.ApiBuilding;
 import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
 import io.pjj.ziphyeonjeon.global.config.AddressCodeMap;
+import io.pjj.ziphyeonjeon.global.API.ApiNaverOcr;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.http.HttpHeaders;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -32,9 +34,11 @@ public class RiskService {
     private final ApiDisaster apiDisaster;
     private final ApiBuilding apiBuilding;
     private final AddressCodeMap addressCodeMap;
+    private final ApiNaverOcr apiNaverOcr;
 
     public RiskService(RiskUploadRepository riskUploadRepository, ObjectMapper objectMapper,
-                       ApiDisaster apiDisaster, ApiBuilding apiBuilding, AddressCodeMap addressCodeMap
+                       ApiDisaster apiDisaster, ApiBuilding apiBuilding, AddressCodeMap addressCodeMap,
+                       ApiNaverOcr apiNaverOcr
     ) {
         this.riskUploadRepository = riskUploadRepository;
         this.objectMapper = objectMapper;
@@ -42,6 +46,7 @@ public class RiskService {
         this.apiDisaster = apiDisaster;
         this.apiBuilding = apiBuilding;
         this.addressCodeMap = addressCodeMap;
+        this.apiNaverOcr = apiNaverOcr;
     }
 
     // 공용 - 주소에서 시군구, 번, 지 추출
@@ -126,12 +131,12 @@ public class RiskService {
     private final String uploadPath = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "uploads").toString();
 
     @Transactional
-    public String saveFile(String address, MultipartFile file) throws IOException {
+    public String saveFile(String address, String requestId, MultipartFile file) throws IOException {
         File directory = new File(uploadPath);
         if (!directory.exists()) directory.mkdirs();
 
         String originalName = file.getOriginalFilename();
-        String saveName = UUID.randomUUID().toString() + "_" + originalName;
+        String saveName = requestId + "_" + originalName;
         Path targetPath = Paths.get(uploadPath, saveName);
         file.transferTo(targetPath);
 
@@ -139,6 +144,12 @@ public class RiskService {
         riskUploadRepository.save(upload);
 
         return saveName;
+    }
+
+    // 공용 - 네이버 OCR 요청
+    @Transactional
+    public String sendToNaverOcr(String message, MultipartFile file) {
+        return apiNaverOcr.callNaverOcr(message, file);
     }
 
     // 재해 - 긴급재난문자API에 요청

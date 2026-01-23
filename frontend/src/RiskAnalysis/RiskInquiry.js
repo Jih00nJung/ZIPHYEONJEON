@@ -15,10 +15,12 @@ const RiskInquiry = () => {
 
     const [address, setAddress] = useState('');
     const [file, setFile] = useState(null);
+    const [isSearched, setIsSearched] = useState(false);
 
     // 주소 요청 버튼
     const addressButton = async () => {
         if (!address.trim()) return;
+        setIsSearched(true);
 
         try {
             console.log(`${address}에 대한 데이터 요청을 시작합니다...`);
@@ -33,30 +35,70 @@ const RiskInquiry = () => {
         }
     }
 
+    // 주소가 바뀌면
+    const handleAddressChange = (e) => {
+        setAddress(e.target.value);
+        setIsSearched(false);
+    };
+
+    // UUID 생성 (중복 방지)
+    const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    };
+
+
     // 파일 업로드
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
 
+    const isInvalid = !address.trim() || !file || !isSearched;
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!address.trim() || !file) {
+        if (!address.trim() || !file || !isSearched) {
             alert("주소와 등기부등본을 모두 입력해주세요.");
             return;
         }
 
-        const formData = new FormData();
-        formData.append('address', address);
-        formData.append('file', file); // 'file'이라는 이름으로 전송
+        const commonRequestId = generateUUID();
+
+        const backFormData = new FormData();
+        backFormData.append('address', address);
+        backFormData.append('requestId', commonRequestId);
+        backFormData.append('file', file);
+
+        const ocrFormData = new FormData();
+        const message = {
+            version: 'V2',
+            requestId: commonRequestId,
+            timestamp: Date.now(),
+            lang: 'ko',
+            images: [
+                {
+                    format: file.name.split('.').pop().toLowerCase(),
+                    name: 'registration_document'
+                }
+            ]
+        };
+        ocrFormData.append('message', JSON.stringify(message));
+        ocrFormData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:8080/api/risk/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            console.log("업로드 성공:", response.data);
-            alert("분석이 시작되었습니다!");
+            const [uploadRes, ocrRes] = await Promise.all([
+                axios.post('http://localhost:8080/api/risk/upload', backFormData),
+                axios.post('http://localhost:8080/api/risk/ocr', ocrFormData)
+            ]);
+
+            console.log('RiskInquiry DB 저장 완료:', uploadRes.data);
+            console.log('RiskInquiry OCR 분석 완료:', ocrRes.data);
+
         } catch (error) {
-            console.error("업로드 실패:", error);
+            console.error('RiskInquiry 요청 실패:', error.response?.data || error.message);
+            alert("RiskInquiry 서버 통신 중 오류가 발생했습니다.");
         }
     };
 
@@ -108,7 +150,11 @@ const RiskInquiry = () => {
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
                                         />
-                                        <button type="button" className="search-btn" onClick={addressButton}>검색</button>
+                                        <button type="button" className="search-btn" onChange={(e) => {
+                                            setAddress(e.target.value);
+                                            setIsSearched(false);
+                                        }} onClick={addressButton}>검색
+                                        </button>
                                     </div>
                                 </div>
 
@@ -135,7 +181,7 @@ const RiskInquiry = () => {
 
                                     </div>
                                     <div className="upload-box">
-                                        <input type="file" className="file-input" onChange={handleFileChange} />
+                                        <input type="file" className="file-input" onChange={handleFileChange}/>
                                         <div className="upload-content">
                                             <div className="upload-icon-circle">
                                                 <IoCloudUploadOutline size={30}/>
@@ -169,10 +215,20 @@ const RiskInquiry = () => {
                                 </div>
 
                                 <div className="submit-section">
-                                    <button type="button" className="submit-btn" onClick={handleSubmit}>
+                                    {isInvalid && (
+                                        <div className="validation-message">
+                                        <span>
+                                            주소 검색과 파일 업로드가 완료되어야 분석을 시작할 수 있습니다.
+                                        </span>
+                                        </div>
+                                    )}
+
+                                    <button type="button" className={`submit-btn ${isInvalid ? 'disabled' : ''}`}
+                                            disabled={isInvalid} onClick={handleSubmit}>
                                         <span>위험 분석 시작하기</span>
                                         <IoArrowForwardOutline size={20}/>
                                     </button>
+
                                     <p className="terms-text">
 
                                         시작을 클릭하면 <a href="#">서비스 약관</a>에 동의하게 됩니다.
