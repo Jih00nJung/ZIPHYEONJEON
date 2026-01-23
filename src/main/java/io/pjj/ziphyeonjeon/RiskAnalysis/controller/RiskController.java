@@ -42,15 +42,28 @@ public class RiskController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadRegistry(
             @RequestParam("address") String address,
+            @RequestParam("requestId") String requestId,
             @RequestParam("file") MultipartFile file) {
 
         try {
-            String savedFileName = riskService.saveFile(address, file);
+            String savedFileName = riskService.saveFile(address, requestId, file);
 
             return ResponseEntity.ok("파일 및 DB 저장 성공: " + savedFileName);
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("파일 처리 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // OCR 전송
+    @PostMapping("/ocr")
+    public ResponseEntity<String> proxyOcr(@RequestParam("message") String message,
+                                           @RequestParam("file") MultipartFile file) {
+        try {
+            String result = riskService.sendToNaverOcr(message, file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("OCR 요청 중 오류: " + e.getMessage());
         }
     }
 }
