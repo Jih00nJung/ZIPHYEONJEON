@@ -25,10 +25,10 @@ public class ApiDisaster {
                 + "&numOfRows=1000&pageNo=1&returnType=json";
 
         try {
-            System.out.println("API 호출중");
+            System.out.println("ApiDisaster...");
             return restTemplate.getForObject(url, String.class);
         } catch (Exception e) {
-            return "{\"error\": \"API 호출 실패: " + e.getMessage() + "\"}";
+            return "{\"error\": \"ApiDisaster 실패: " + e.getMessage() + "\"}";
         }
     }
 }

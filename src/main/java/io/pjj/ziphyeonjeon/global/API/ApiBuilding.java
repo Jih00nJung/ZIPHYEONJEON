@@ -46,14 +46,14 @@ public class ApiBuilding {
 
                 URI uri = new URI(urlString);
 
-                System.out.println(key + " BUILDING API 호출 중... (URL 확인: " + operation + ")");
+                System.out.println(key + " ApiBuilding...");
 
                 String response = restTemplate.getForObject(uri, String.class);
                 results.put(key, response);
 
             } catch (Exception e) {
-                System.err.println(key + " API 호출 실패: " + e.getMessage());
-                results.put(key, "{\"error\": \"API 호출 중 예외 발생: " + e.getMessage() + "\"}");
+                System.err.println(key + " ApiBuilding 실패: " + e.getMessage());
+                results.put(key, "{\"error\": \"ApiBuilding 예외 발생: " + e.getMessage() + "\"}");
             }
         });
 

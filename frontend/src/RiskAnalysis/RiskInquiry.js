@@ -202,13 +202,21 @@ const RiskInquiry = () => {
                                     </label>
                                     <div className="consent-group">
                                         <ConsentItem
-                                            title="전세가율 분석"
-                                            desc="시세 데이터를 바탕으로 매물의 안전성을 진단합니다."
+                                            title="분석 결과 활용 시 주의사항"
+                                            desc={<>
+                                                분석 결과는 과거 데이터를 바탕으로 구성되었습니다.<br/>
+                                                실제 매물 상태와 차이가 있을 수 있으므로, 의사 결정의 보조 수단으로만 사용하시길 권장합니다.
+                                            </>}
                                             essential={true}
                                         />
                                         <ConsentItem
                                             title="부동산 재해 위험 정보 조회 동의"
-                                            desc="정부 공공 데이터를 활용하여 해당 위치의 침수 및 화재 이력을 확인합니다."
+                                            desc={"정부 공공 데이터를 활용하여 해당 위치의 침수, 화재 등 재해 이력을 확인합니다."}
+                                            essential={true}
+                                        />
+                                        <ConsentItem
+                                            title="전세가율 분석"
+                                            desc="시세 데이터를 바탕으로 매물의 안전성을 진단합니다."
                                             essential={false}
                                         />
                                     </div>
@@ -231,7 +239,7 @@ const RiskInquiry = () => {
 
                                     <p className="terms-text">
 
-                                        시작을 클릭하면 <a href="#">서비스 약관</a>에 동의하게 됩니다.
+                                        시작하기를 클릭하면 <a href="#">서비스 약관</a>에 동의하게 됩니다.
                                     </p>
                                 </div>
                             </form>
@@ -245,7 +253,6 @@ const RiskInquiry = () => {
     );
 };
 
-// Sub-components for cleaner code
 const ConsentItem = ({title, desc, essential}) => (
     <label className="consent-item">
         <div className="checkbox-wrapper">

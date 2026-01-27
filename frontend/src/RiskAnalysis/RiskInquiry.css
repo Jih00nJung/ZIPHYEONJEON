@@ -223,17 +223,21 @@ body {
 }
 
 .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    background: var(--primary-light);
-    color: var(--primary);
-    border-radius: 99px;
-    font-size: 11px;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+
+    /* 기존 스타일 유지 */
+    padding: 6px 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: var(--primary-dark);
+    border-radius: 20px;
     font-weight: 700;
-    border: 1px solid rgba(59, 130, 246, 0.1);
-    margin-bottom: 16px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    white-space: nowrap !important;
 }
 
 .title {

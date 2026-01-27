@@ -1,5 +1,6 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.controller;
 
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.OcrDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskService;
 import org.springframework.http.ResponseEntity;
@@ -48,22 +49,22 @@ public class RiskController {
         try {
             String savedFileName = riskService.saveFile(address, requestId, file);
 
-            return ResponseEntity.ok("파일 및 DB 저장 성공: " + savedFileName);
+            return ResponseEntity.ok("/api/risk/upload/: " + savedFileName);
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("파일 처리 중 오류 발생: " + e.getMessage());
+            return ResponseEntity.status(500).body("/upload 컨트롤러 오류 발생: " + e.getMessage());
         }
     }
 
     // OCR 전송
     @PostMapping("/ocr")
-    public ResponseEntity<String> proxyOcr(@RequestParam("message") String message,
+    public ResponseEntity<?> requestOcr(@RequestParam("message") String message,
                                            @RequestParam("file") MultipartFile file) {
         try {
-            String result = riskService.sendToNaverOcr(message, file);
+            RiskResponseDTO<RiskResponseDTO.RecordOfTitleResponse> result = riskService.analyzeRecordOfTitleRisk(message, file);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("OCR 요청 중 오류: " + e.getMessage());
+            return ResponseEntity.status(500).body("/ocr 컨트롤러 오류 발생: " + e.getMessage());
         }
     }
 }

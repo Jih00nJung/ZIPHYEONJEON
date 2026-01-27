@@ -1,7 +1,6 @@
 import React from 'react';
 import {IoCodeSlash} from "react-icons/io5";
 import '../Ziphyeonjeon.css';
-import axios from "axios"; // Importing global styles until CSS is modularized
 
 const Header = () => {
     const navItems = [
@@ -23,29 +22,30 @@ const Header = () => {
             ]
         },
         {
+            label: '공통',
+            link: '#',
+            children: [
+                {label: 'Login', link: '/login'},
+                {label: 'Registration', link: '/registration'}
+            ]
+        },
+        {
             label: '위험 분석',
             link: '/riskInquiry',
             children: [
-                {label: '분석 조회', link: '/riskInquiry'},
+                {label: '종합 분석', link: '/riskInquiry'},
                 {label: '리포트 예시', link: '/riskAnalysis'}
             ]
         }
     ];
 
-    const refreshApiButton = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/api/risk/refresh-disaster`);
-            console.log("/refresh-disaster:", response.data);
-        } catch (error) {
-            console.error("데이터 요청 실패:", error);
-        }
-    }
-
     return (
         <header className="header">
             <div className="container header-content">
                 <div className="logo-area"><a className="logo_link" href={`/`}>
-                    <span className="material-symbols-outlined"><img className="logo" src={`/img/Logo_cropZIPHYEONJEONv1.png`} alt={`Logo_ZIPHYEONJEONv1`}/></span>
+                    <span className="material-symbols-outlined"><img className="logo"
+                                                                     src={`/img/Logo_cropZIPHYEONJEONv1.png`}
+                                                                     alt={`Logo_ZIPHYEONJEONv1`}/></span>
                     집현전
                 </a></div>
 
@@ -70,26 +70,17 @@ const Header = () => {
                 </nav>
 
                 <div className="header-buttons">
-
-                    <a onClick={refreshApiButton}>
-                        /refresh-disaster
-                    </a>
-
-                    <a
-                        href="https://www.erdcloud.com/d/wHBL6BcoxjcspCNEt"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-erd"
-                    >
+                    <a href="https://www.erdcloud.com/d/wHBL6BcoxjcspCNEt"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="btn-erd">
                         <span className="material-symbols-outlined"><IoCodeSlash/></span>
                         ERD
                     </a>
-                    <a
-                        href="https://github.com/Jih00nJung/ZIPHYEONJEON.git"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-github"
-                    >
+                    <a href="https://github.com/Jih00nJung/ZIPHYEONJEON.git"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="btn-github">
                         Github
                     </a>
                 </div>

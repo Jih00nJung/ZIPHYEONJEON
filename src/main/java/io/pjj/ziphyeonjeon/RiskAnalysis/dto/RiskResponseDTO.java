@@ -32,4 +32,17 @@ public record RiskResponseDTO<T>(
         }
     }
 
+    public record RecordOfTitleResponse(
+            String gapguIssue,
+            int score,
+            List<String> riskFactors
+
+    ) {
+        public static String calculateRecordOfTitleLevel(int score) {
+            if (score >= 90) return "안전";
+            if (score >= 70) return "주의";
+            return "위험";
+        }
+    }
+
 }
