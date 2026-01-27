@@ -1,5 +1,6 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.service;
 
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.OcrDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,10 +19,11 @@ import io.pjj.ziphyeonjeon.global.API.ApiNaverOcr;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpHeaders;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static reactor.netty.http.HttpConnectionLiveness.log;
 
@@ -146,12 +148,6 @@ public class RiskService {
         return saveName;
     }
 
-    // 공용 - 네이버 OCR 요청
-    @Transactional
-    public String sendToNaverOcr(String message, MultipartFile file) {
-        return apiNaverOcr.callNaverOcr(message, file);
-    }
-
     // 재해 - 긴급재난문자API에 요청
     public RiskResponseDTO<RiskResponseDTO.DisasterResponse> sendDisasterApi(String address) {
         Map<String, String> addrDetails = parseAddressDetails(address);
@@ -246,5 +242,118 @@ public class RiskService {
         return Math.max(score, 0);
     }
 
+    // 등기부등본 요청 -> 추출 -> 점수 계산
+    @Transactional
+    public RiskResponseDTO<RiskResponseDTO.RecordOfTitleResponse> analyzeRecordOfTitleRisk(String message, MultipartFile file) {
+        OcrDTO ocrData = extractText(message, file);
+        RiskResponseDTO.RecordOfTitleResponse RecordOfTitleResult = calculateRecordOfTitleScore(ocrData);
 
+        return new RiskResponseDTO<>("success", "등기부등본 분석 완료", List.of(RecordOfTitleResult));
+    }
+
+    // 등기부등본 - 네이버 OCR 요청
+    @Transactional
+    public String sendToNaverOcr(String message, MultipartFile file) {
+        return apiNaverOcr.callNaverOcr(message, file);
+    }
+
+    // 등기부등본 - 네이버 OCR 내용 추출
+    public OcrDTO extractText(String message, MultipartFile file) {
+        try {
+            String rawJson = sendToNaverOcr(message, file);
+            JsonNode root = objectMapper.readTree(rawJson);
+            JsonNode fields = root.path("images").get(0).path("fields");
+
+            StringBuilder fullTextBuilder = new StringBuilder();
+            for (JsonNode field : fields) {
+                fullTextBuilder.append(field.path("inferText").asText()).append(" ");
+            }
+            String fullText = fullTextBuilder.toString();
+
+            System.out.println("전체 텍스트: " + fullText);
+
+            // ] 와 [ 사이 추출 (정규표현식)
+            List<String> extracted = new ArrayList<>();
+
+            // 정규표현식 전략:
+            // 표\s*제\s*부 : '표제부' 사이에 공백(\s*)이 몇 개든 찾음
+            // .*?기\s*타\s*사\s*항 : 각 부 뒤에 '기타사항' 이후부터 찾음
+            // [^가-힣a-zA-Z0-9]* : 문자와 숫자만 가져옴
+            // (.*?) : 아무 문자나 모든 문자열, group(1)으로 가져옴
+            // (?=갑\s*구|을\s*구|이\s*하\s*여\s*백|$) : 조건만 확인, 다음 섹션이나 '이하 여백'이 나오면 멈춤
+
+            String[] sectionRegex = {
+                    "표\\s*제\\s*부.*?기\\s*타\\s*사\\s*항[^가-힣a-zA-Z0-9]*(.*?)(?=갑\\s*구|을\\s*구|이\\s*하\\s*여\\s*백|$)",
+                    "갑\\s*구.*?기\\s*타\\s*사\\s*항[^가-힣a-zA-Z0-9]*(.*?)(?=을\\s*구|이\\s*하\\s*여\\s*백|$)",
+                    "을\\s*구.*?기\\s*타\\s*사\\s*항[^가-힣a-zA-Z0-9]*(.*?)(?=이\\s*하\\s*여\\s*백|$)"
+            };
+
+            for (String regex : sectionRegex) {
+                Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+                Matcher matcher = pattern.matcher(fullText);
+
+                if (matcher.find()) {
+                    String content = matcher.group(1).trim();
+                    content = content.replaceFirst("^[^가-힣a-zA-Z0-9]*", "");
+                    extracted.add(content);
+                } else {
+                    extracted.add("데이터를 찾을 수 없음");
+                }
+            }
+
+            return new OcrDTO(extracted, rawJson);
+
+        } catch (Exception e) {
+            throw new RuntimeException("extractText: " + e.getMessage(), e);
+        }
+    }
+
+    public RiskResponseDTO.RecordOfTitleResponse calculateRecordOfTitleScore(OcrDTO ocrData) {
+        int score = 100;
+        List<String> riskFactors = new ArrayList<>();
+        String gapguIssue = "특이사항 없음";
+
+        List<String> extracted = ocrData.extractedTexts();
+
+        // 갑구 분석
+        if (extracted.size() > 1) {
+            String gapguText = extracted.get(1);
+
+            if (gapguText.contains("경매") && !gapguText.contains("말소")) {
+                score -= 100;
+                riskFactors.add("경매절차 진행 중: 매우 위험");
+                gapguIssue = "경매 개시 결정 확인";
+            }
+            if (gapguText.contains("가등기") && !gapguText.contains("말소")) {
+                score -= 60;
+                riskFactors.add("가등기 발견: 소유권 변동 가능성 있음");
+            }
+            if ((gapguText.contains("압류") || gapguText.contains("가압류")) && !gapguText.contains("말소")) {
+                score -= 50;
+                riskFactors.add("압류/가압류 확인: 채무 불이행 위험");
+            }
+            if (gapguText.contains("신탁") && !gapguText.contains("말소")) {
+                score -= 30;
+                riskFactors.add("신탁 등기: 실제 소유권자 확인 필요");
+            }
+        }
+
+        // 을구 분석
+        if (extracted.size() > 2) {
+            String eulguText = extracted.get(2);
+
+            if (eulguText.contains("임차권등기") && !eulguText.contains("말소")) {
+                score -= 80;
+                riskFactors.add("임차권등기명령 이력: 보증금 미반환 사고 전적 있음");
+            }
+            if (eulguText.contains("근저당권") && !eulguText.contains("말소")) {
+                score -= 20;
+                riskFactors.add("근저당권 설정: 담보대출 금액 확인 필요");
+            }
+        }
+
+        score = Math.max(score, 0);
+
+        return new RiskResponseDTO.RecordOfTitleResponse(gapguIssue, score, riskFactors);
+    }
 }

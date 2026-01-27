@@ -35,7 +35,7 @@ public class ApiNaverOcr {
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-            System.out.println("네이버 OCR API 호출 중...");
+            System.out.println("ApiNaverOcr...");
             ResponseEntity<String> response = restTemplate.exchange(
                     serviceUrl,
                     HttpMethod.POST,
@@ -46,8 +46,8 @@ public class ApiNaverOcr {
             return response.getBody();
 
         } catch (Exception e) {
-            System.err.println("OCR API 호출 실패: " + e.getMessage());
-            return "{\"error\": \"OCR API 호출 실패: " + e.getMessage() + "\"}";
+            System.err.println("ApiNaverOcr 실패: " + e.getMessage());
+            return "{\"error\": \"ApiNaverOcr 실패: " + e.getMessage() + "\"}";
         }
     }
 }
