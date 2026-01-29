@@ -1,6 +1,36 @@
 package io.pjj.ziphyeonjeon.batch.molit;
 
+import java.util.List;
+import java.math.BigDecimal;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface MolitVillaSaleRawRepository extends JpaRepository<MolitVillaSaleRawEntity, Long> {
+        // 빌라/오피스텔은 'BEONJI' 컬럼 사용
+        List<MolitVillaSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+                        String sigungu,
+                        String roadName);
+
+        List<MolitVillaSaleRawEntity> findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+                        String sigungu, String beonji);
+
+        @Query("SELECT AVG(m.dealAmountMan) FROM MolitVillaSaleRawEntity m " +
+                        "WHERE m.sigungu = :sigungu " +
+                        "AND m.beonji LIKE %:dong% " +
+                        "AND m.exclArea BETWEEN :minArea AND :maxArea")
+        Double findAverageDealAmount(@org.springframework.data.repository.query.Param("sigungu") String sigungu,
+                        @org.springframework.data.repository.query.Param("dong") String dong,
+                        @org.springframework.data.repository.query.Param("minArea") java.math.BigDecimal minArea,
+                        @org.springframework.data.repository.query.Param("maxArea") java.math.BigDecimal maxArea);
+
+        @Query("SELECT m.contractYm, AVG(m.dealAmountMan / m.exclArea) " +
+                        "FROM MolitVillaSaleRawEntity m " +
+                        "WHERE m.sigungu = :sigungu " +
+                        "AND m.beonji LIKE %:dong% " +
+                        "GROUP BY m.contractYm " +
+                        "ORDER BY m.contractYm ASC")
+        List<Object[]> findMonthlyAverageUnitPrice(
+                        @org.springframework.data.repository.query.Param("sigungu") String sigungu,
+                        @org.springframework.data.repository.query.Param("dong") String dong);
 }
