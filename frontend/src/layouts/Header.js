@@ -31,10 +31,10 @@ const Header = () => {
         },
         {
             label: '위험 분석',
-            link: '/riskInquiry',
+            link: '/riskanalysis',
             children: [
-                {label: '종합 분석', link: '/riskInquiry'},
-                {label: '리포트 예시', link: '/riskAnalysis'}
+                {label: '종합 분석', link: '/riskanalysis'},
+                {label: '리포트 예시', link: '/riskreport'}
             ]
         }
     ];
