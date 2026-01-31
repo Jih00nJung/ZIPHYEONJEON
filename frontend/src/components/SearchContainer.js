@@ -5,7 +5,7 @@ const SearchContainer = ({ placeholderTxt, buttonName }) => {
 
     const navigate = useNavigate();
     const handleRiskButton = () => {
-        navigate('/RiskAnalysis');
+        navigate('/RiskReport');
 
     };
 

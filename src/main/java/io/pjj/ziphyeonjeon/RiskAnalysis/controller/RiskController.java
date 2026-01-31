@@ -1,12 +1,13 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.controller;
 
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.OcrDTO;
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
-import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.multipart.MultipartFile;
+
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
+import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskAnalysisService;
+import io.pjj.ziphyeonjeon.RiskAnalysis.service.RiskOcrService;
+
 import java.io.IOException;
 
 @RestController
@@ -14,10 +15,12 @@ import java.io.IOException;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class RiskController {
 
-    private final RiskService riskService;
+    private final RiskAnalysisService riskAnalysisService;
+    private final RiskOcrService riskOcrService;
 
-    public RiskController(RiskService riskService) {
-        this.riskService = riskService;
+    public RiskController(RiskAnalysisService riskAnalysisService, RiskOcrService riskOcrService) {
+        this.riskAnalysisService = riskAnalysisService;
+        this.riskOcrService = riskOcrService;
     }
 
     // 재해 위험 정보 조회
@@ -25,7 +28,7 @@ public class RiskController {
     public ResponseEntity<RiskResponseDTO<RiskResponseDTO.DisasterResponse>> searchDisaster(@PathVariable String address) {
         System.out.println("/api/risk/disaster/{address}: " + address);
 
-        RiskResponseDTO<RiskResponseDTO.DisasterResponse> response = riskService.sendDisasterApi(address);
+        RiskResponseDTO<RiskResponseDTO.DisasterResponse> response = riskAnalysisService.analyzeDisasterRisk(address);
         return ResponseEntity.ok(response);
     }
 
@@ -34,7 +37,7 @@ public class RiskController {
     public ResponseEntity<RiskResponseDTO<RiskResponseDTO.BuildingResponse>> analyzeBuilding(@PathVariable String address) {
         System.out.println("/api/risk/building/{address}: " + address);
 
-        RiskResponseDTO<RiskResponseDTO.BuildingResponse> response = riskService.sendBuildingApi(address);
+        RiskResponseDTO<RiskResponseDTO.BuildingResponse> response = riskAnalysisService.analyzeBuildingRisk(address);
 
         return ResponseEntity.ok(response);
     }
@@ -47,7 +50,7 @@ public class RiskController {
             @RequestParam("file") MultipartFile file) {
 
         try {
-            String savedFileName = riskService.saveFile(address, requestId, file);
+            String savedFileName = riskOcrService.saveFile(address, requestId, file);
 
             return ResponseEntity.ok("/api/risk/upload/: " + savedFileName);
         } catch (IOException e) {
@@ -58,10 +61,10 @@ public class RiskController {
 
     // OCR 전송
     @PostMapping("/ocr")
-    public ResponseEntity<?> requestOcr(@RequestParam("message") String message,
-                                           @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> requestOcr(@RequestParam String message,
+                                        @RequestParam MultipartFile file) {
         try {
-            RiskResponseDTO<RiskResponseDTO.RecordOfTitleResponse> result = riskService.analyzeRecordOfTitleRisk(message, file);
+            RiskResponseDTO<RiskResponseDTO.RecordOfTitleResponse> result = riskAnalysisService.analyzeRecordOfTitleRisk(message, file);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("/ocr 컨트롤러 오류 발생: " + e.getMessage());
