@@ -17,7 +17,7 @@ const RiskAnalysis = () => {
     const [isSearched, setIsSearched] = useState(false);
 
     // 주소 검색 버튼
-    // 추후 검색 API 추가하자. 아마 윤성용님이 만들었을 듯?
+    // 윤성용님이 만든 /global/API/vworld/VworldSearchClient.java 지번 검색으로 사용해서 만들기
     const addressButton = async () => {
         if (!address.trim()) return alert("주소를 입력해주세요.");
         setIsSearched(true);

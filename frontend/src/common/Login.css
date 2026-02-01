@@ -1,318 +1,174 @@
-/* 변수 정의 */
-:root {
-    --primary: #3B82F6;
-    --primary-dark: #1E40AF;
-    --primary-light: #EFF6FF;
-    --navy-deep: #0F172A;
-    --bg-page: #F0F7FF;
-    --card-white: #FFFFFF;
-    --kakao: #FEE500;
-    --naver: #03C75A;
-    --slate-400: #94A3B8;
-    --slate-500: #64748B;
-    --slate-700: #334155;
-}
+/* Login.css - Refactored for Common Components */
 
-.login-container {
-    min-height: 100vh;
+.login-page-container {
+    min-height: calc(100vh - 80px);
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--bg-page);
-    font-family: 'Public Sans', sans-serif;
-    padding: 1rem;
+    background-color: var(--slate-50);
+    padding: 40px 24px;
+    background-image: radial-gradient(at 0% 0%, hsla(217, 100%, 97%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(225, 100%, 97%, 1) 0, transparent 50%);
 }
 
 .login-wrapper {
     width: 100%;
-    max-width: 448px;
+    max-width: 440px;
+    animation: fadeIn 0.6s ease-out;
 }
 
-/* Header */
-.header-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.logo-icon {
-    width: 56px;
-    height: 56px;
-    background-color: rgba(59, 130, 246, 0.1);
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary);
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+.card-header-v2 {
+    text-align: center;
+    margin-bottom: 24px;
 }
 
-.brand-name {
-    font-size: 1.875rem;
-    font-weight: 900;
-    color: var(--navy-deep);
-}
-
-.brand-subtitle {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-top: 0.25rem;
-}
-
-/* Card */
-.login-card {
-    background: var(--card-white);
-    border-radius: 1.5rem;
-    padding: 2.5rem;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.12);
-    border: 1px solid #EFF6FF;
-}
-
-.decoration-circle {
-    position: absolute;
-    top: -3rem;
-    right: -3rem;
-    width: 8rem;
-    height: 8rem;
-    background-color: var(--primary-light);
-    border-radius: 50%;
-    opacity: 0.5;
-}
-
-.card-content {
-    position: relative;
-    z-index: 10;
-}
-
-.card-header h2 {
-    font-size: 1.5rem;
+.card-header-v2 h2 {
+    font-size: 26px;
     font-weight: 800;
-    color: var(--navy-deep);
+    color: var(--slate-900);
+    margin-bottom: 8px;
 }
 
-.card-header p {
+.card-header-v2 p {
     color: var(--slate-500);
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    margin-bottom: 2rem;
+    font-size: 15px;
 }
 
-/* Form */
-.login-form {
+.login-form-v2 {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 16px;
 }
 
-.input-group label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--slate-700);
-    margin-left: 0.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.input-wrapper {
-    position: relative;
-}
-
-.leading-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--slate-400);
-    font-size: 1.25rem;
-}
-
-.input-wrapper input {
-    width: 100%;
-    padding: 0.875rem 1rem 0.875rem 2.75rem;
-    background-color: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 0.75rem;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-}
-
-.input-wrapper input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-}
-
-.toggle-password {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--slate-400);
+.toggle-password-v2 {
     background: none;
     border: none;
+    color: var(--slate-400);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 4px;
 }
 
-/* Checkbox & Options */
-.form-options {
+.form-options-v2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 4px 0;
 }
 
-.checkbox-container {
+.custom-checkbox-v2 {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
     cursor: pointer;
 }
 
-.checkbox-container input {
+.hidden-checkbox-v2 {
     display: none;
 }
 
-.checkmark {
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 1px solid #CBD5E1;
-    border-radius: 4px;
+.check-box-ui {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--slate-200);
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: white;
-    position: relative;
+    transition: all 0.2s;
 }
 
-.checkbox-container input:checked + .checkmark {
-    background-color: var(--primary);
+.hidden-checkbox-v2:checked+.check-box-ui {
+    background: var(--primary);
     border-color: var(--primary);
 }
 
-.checkmark .material-symbols-outlined {
+.check-box-ui .material-symbols-outlined {
+    font-size: 16px;
     color: white;
-    font-size: 0.875rem;
     display: none;
 }
 
-.checkbox-container input:checked + .checkmark .material-symbols-outlined {
+.hidden-checkbox-v2:checked+.check-box-ui .material-symbols-outlined {
     display: block;
 }
 
 .label-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--slate-500);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--slate-600);
 }
 
-.forgot-password {
-    font-size: 0.75rem;
+.forgot-password-v2 {
+    font-size: 14px;
     font-weight: 700;
     color: var(--primary);
     text-decoration: none;
 }
 
-/* Buttons */
-.login-submit-btn {
-    height: 3rem;
-    background-color: var(--primary);
-    color: white;
-    border-radius: 0.75rem;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-    transition: all 0.2s;
-}
-
-.login-submit-btn:hover {
-    background-color: var(--primary-dark);
-}
-
-.login-submit-btn:active {
-    transform: scale(0.98);
-}
-
-/* Divider */
-.divider {
-    position: relative;
-    margin: 2rem 0;
+.signup-link-v2 {
     text-align: center;
+    margin-top: 24px;
 }
 
-.divider::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    border-top: 1px solid #F1F5F9;
+.signup-link-v2 a {
+    color: var(--primary);
+    font-weight: 800;
+    text-decoration: none;
 }
 
-.divider-text {
-    position: relative;
-    background: var(--card-white);
-    padding: 0 0.75rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--slate-400);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* Social Login */
-.social-login-grid {
+/* Social Custom */
+.social-login-grid-v2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    gap: 12px;
 }
 
-.social-btn {
-    height: 2.75rem;
-    border-radius: 0.75rem;
-    border: none;
-    font-weight: 700;
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: opacity 0.2s;
+.btn-kakao-v2:hover {
+    background: #FEE500 !important;
+    border-color: #FEE500 !important;
+    color: #3c1e1e !important;
 }
 
-.social-btn.kakao { background-color: var(--kakao); color: rgba(0,0,0,0.8); }
-.social-btn.naver { background-color: var(--naver); color: white; }
-.social-btn:hover { opacity: 0.9; }
+.btn-naver-v2:hover {
+    background: #03C75A !important;
+    border-color: #03C75A !important;
+    color: white !important;
+}
 
-/* Footer */
-.login-footer {
-    margin-top: 2.5rem;
+.login-footer-v2 {
+    margin-top: 24px;
     text-align: center;
 }
 
-.login-footer p {
-    font-size: 0.75rem;
+.login-footer-v2 p {
+    font-size: 13px;
     color: var(--slate-400);
 }
 
-.footer-links {
+.footer-links-v2 {
     display: flex;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    gap: 16px;
+    margin-top: 8px;
 }
 
-.footer-links a {
-    font-size: 10px;
-    font-weight: 700;
+.footer-links-v2 a {
+    font-size: 12px;
     color: var(--slate-400);
     text-decoration: none;
-    text-transform: uppercase;
 }
