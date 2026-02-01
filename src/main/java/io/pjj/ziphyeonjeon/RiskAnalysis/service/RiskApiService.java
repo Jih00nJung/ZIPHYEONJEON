@@ -12,7 +12,6 @@ import static reactor.netty.http.HttpConnectionLiveness.log;
 
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.BuildingDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.DisasterDTO;
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
 import io.pjj.ziphyeonjeon.global.API.ApiBuilding;
 import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
 
@@ -32,7 +31,7 @@ public class RiskApiService {
     }
 
     // 재해 API
-    public List<RiskResponseDTO.DisasterResponse> requestDisasterApi(String address) {
+    public List<DisasterDTO> requestDisasterApi(String address) {
         Map<String, String> addrDetails = riskAddressService.splitAddressDetails(address);
         String district = addrDetails.get("district");
 
@@ -43,12 +42,10 @@ public class RiskApiService {
     }
 
     // 재난 필터링 로직
-    private List<RiskResponseDTO.DisasterResponse> filterDisasterData(List<DisasterDTO> list) {
+    private List<DisasterDTO> filterDisasterData(List<DisasterDTO> list) {
         return list.stream()
                 .filter(data -> data.EMRG_STEP_NM() != null && data.EMRG_STEP_NM().contains("재난"))
-                .map(data -> new RiskResponseDTO.DisasterResponse(
-                        data.RCPTN_RGN_NM(), data.EMRG_STEP_NM(), data.DST_SE_NM(), data.REG_YMD()
-                )).toList();
+                .toList();
     }
 
     // 건축물대장 API

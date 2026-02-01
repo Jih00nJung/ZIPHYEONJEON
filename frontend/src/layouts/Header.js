@@ -1,5 +1,5 @@
 import React from 'react';
-import {IoCodeSlash} from "react-icons/io5";
+import { IoCodeSlash } from "react-icons/io5";
 import '../Ziphyeonjeon.css';
 
 const Header = () => {
@@ -8,33 +8,31 @@ const Header = () => {
             label: '서비스 소개',
             link: '#',
             children: [
-                {label: '서비스 개요', link: '#'},
-                {label: '주요 기능', link: '#'}
-            ]
-        },
-        {
-            label: '기술 스택',
-            link: '#',
-            children: [
-                {label: 'Frontend', link: '#'},
-                {label: 'Backend', link: '#'},
-                {label: 'AI / DB', link: '#'}
+                { label: '서비스 개요', link: '#' },
+                { label: '주요 기능', link: '#' }
             ]
         },
         {
             label: '공통',
             link: '#',
             children: [
-                {label: 'Login', link: '/login'},
-                {label: 'Registration', link: '/registration'}
+                { label: 'Login', link: '/login' },
+                { label: 'Registration', link: '/registration' }
             ]
         },
         {
             label: '위험 분석',
             link: '/riskanalysis',
             children: [
-                {label: '종합 분석', link: '/riskanalysis'},
-                {label: '리포트 예시', link: '/riskreport'}
+                { label: '종합 분석', link: '/riskanalysis' },
+                { label: '리포트 예시', link: '/riskreport' }
+            ]
+        },
+        {
+            label: '대출 추천',
+            link: '/loan',
+            children: [
+                { label: '대출', link: '/loan' },
             ]
         }
     ];
@@ -43,9 +41,13 @@ const Header = () => {
         <header className="header">
             <div className="container header-content">
                 <div className="logo-area"><a className="logo_link" href={`/`}>
-                    <span className="material-symbols-outlined"><img className="logo"
-                                                                     src={`/img/Logo_cropZIPHYEONJEONv1.png`}
-                                                                     alt={`Logo_ZIPHYEONJEONv1`}/></span>
+                    <span className="material-symbols-outlined">
+                        <img className="logo"
+                            src={`/img/Logo_cropZIPHYEONJEONv1.png`}
+                            alt={`Logo_ZIPHYEONJEONv1`}
+                            style={{ height: '40px', width: 'auto' }}
+                        />
+                    </span>
                     집현전
                 </a></div>
 
@@ -71,16 +73,16 @@ const Header = () => {
 
                 <div className="header-buttons">
                     <a href="https://www.erdcloud.com/d/wHBL6BcoxjcspCNEt"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="btn-erd">
-                        <span className="material-symbols-outlined"><IoCodeSlash/></span>
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-erd">
+                        <span className="material-symbols-outlined"><IoCodeSlash /></span>
                         ERD
                     </a>
                     <a href="https://github.com/Jih00nJung/ZIPHYEONJEON.git"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="btn-github">
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-github">
                         Github
                     </a>
                 </div>

@@ -1,164 +1,120 @@
 import React, { useState } from 'react';
 import './Registration.css';
+import MainLayout from '../layouts/MainLayout';
+import Card from '../components/common/Card';
+import Input from '../components/common/Input';
+import Button from '../components/common/Button';
+import SocialDivider from '../components/common/SocialDivider';
 
 const SignupPage = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className="signup-page">
-            {/* 네비게이션 헤더 */}
-            <header className="signup-header">
-                <div className="header-container">
-                    <a href="/" className="logo-group">
-                        <div className="logo-box">
-                            <span className="material-symbols-outlined">home_work</span>
-                        </div>
-                        <div className="logo-text">
-                            <h1>집현전</h1>
-                            <p>Safe Realty</p>
-                        </div>
-                    </a>
-                    <div className="header-actions">
-                        <span className="login-prompt">Already have an account?</span>
-                        <a href="/login" className="btn-login-outline">Log In</a>
-                    </div>
-                </div>
-            </header>
+        <MainLayout>
+            <div className="signup-page-container">
+                <main className="signup-main">
+                    <div className="form-card-container">
+                        <Card glass padding="48px">
+                            <header className="card-header">
+                                <h2>계정 만들기</h2>
+                                <p>집현전과 함께 안전한 부동산 거래를 시작하세요.</p>
+                            </header>
 
-            {/* 메인 가입 폼 */}
-            <main className="signup-main">
-                <div className="form-container">
-                    <div className="signup-card">
-                        <div className="bg-blur-decoration"></div>
-
-                        <div className="card-inner">
-                            <div className="card-title">
-                                <h2>Create Account</h2>
-                                <p>Join Jiphyeonjeon for safe real estate transactions.</p>
-                            </div>
-
-                            {/* 스텝퍼 (단계 표시) */}
-                            <div className="stepper">
-                                <div className="stepper-line"></div>
-                                <div className="step active">
-                                    <div className="step-number">1</div>
-                                    <span className="step-label">Basic Info</span>
+                            {/* 가입 단계 표시 */}
+                            <div className="stepper-v2">
+                                <div className="step-unit-v2 active">
+                                    <div className="step-num">1</div>
+                                    <span className="step-txt">정보 입력</span>
                                 </div>
-                                <div className="step">
-                                    <div className="step-number">2</div>
-                                    <span className="step-label">Verification</span>
+                                <div className="step-line-v2"></div>
+                                <div className="step-unit-v2">
+                                    <div className="step-num">2</div>
+                                    <span className="step-txt">본인 인증</span>
                                 </div>
-                                <div className="step">
-                                    <div className="step-number">3</div>
-                                    <span className="step-label">Agreements</span>
+                                <div className="step-line-v2"></div>
+                                <div className="step-unit-v2">
+                                    <div className="step-num">3</div>
+                                    <span className="step-txt">약관 동의</span>
                                 </div>
                             </div>
 
-                            <form className="signup-form">
-                                <div className="input-stack">
-                                    <div className="field-group">
-                                        <label>Full Name</label>
-                                        <div className="input-with-icon">
-                                            <span className="material-symbols-outlined icon">person</span>
-                                            <input type="text" placeholder="Enter your full name" />
-                                        </div>
-                                    </div>
-
-                                    <div className="field-group">
-                                        <label>Email Address</label>
-                                        <div className="input-with-icon">
-                                            <span className="material-symbols-outlined icon">mail</span>
-                                            <input type="email" placeholder="name@example.com" />
-                                        </div>
-                                    </div>
-
-                                    <div className="field-group">
-                                        <label>Password</label>
-                                        <div className="input-with-icon">
-                                            <span className="material-symbols-outlined icon">lock</span>
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                placeholder="At least 8 characters"
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn-toggle-eye"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                        <span className="material-symbols-outlined">
-                          {showPassword ? 'visibility_off' : 'visibility'}
-                        </span>
+                            <form className="signup-form-v2">
+                                <div className="input-stack-v2">
+                                    <Input label="이름" id="fullName" placeholder="성함을 입력해주세요" icon="person" />
+                                    <Input label="이메일 주소" id="email" type="email" placeholder="example@email.com" icon="mail" />
+                                    <Input
+                                        label="비밀번호"
+                                        id="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="8자 이상의 영문, 숫자 조합"
+                                        icon="lock"
+                                        rightElement={
+                                            <button type="button" className="eye-btn-v2" onClick={() => setShowPassword(!showPassword)}>
+                                                <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                                             </button>
-                                        </div>
-                                    </div>
+                                        }
+                                    />
                                 </div>
 
-                                <div className="submit-area">
-                                    <button type="button" className="btn-continue">Continue</button>
+                                <Button variant="dark" size="lg" fullWidth className="mt-24">다음 단계로</Button>
+
+                                <SocialDivider>또는 소셜 계정으로 가입</SocialDivider>
+
+                                <div className="social-grid-v2">
+                                    <Button variant="outline" fullWidth icon="chat_bubble" className="btn-kakao-v2">Kakao</Button>
+                                    <Button variant="outline" fullWidth icon="grid_view" className="btn-google-v2">Google</Button>
                                 </div>
 
-                                <div className="social-divider">
-                                    <span>Or sign up with</span>
-                                </div>
-
-                                <div className="social-grid">
-                                    <button type="button" className="social-btn google">
-                                        <img src="https://www.google.com/favicon.ico" alt="Google" />
-                                        Google
-                                    </button>
-                                    <button type="button" className="social-btn kakao">
-                                        <span className="material-symbols-outlined">chat_bubble</span>
-                                        Kakao
-                                    </button>
-                                </div>
-
-                                {/* 약관 미리보기 */}
-                                <div className="terms-preview">
-                                    <div className="preview-header">
-                                        <h3>Preview: Terms & Agreements</h3>
-                                        <label className="select-all">
-                                            <input type="checkbox" />
-                                            <span>Select All</span>
+                                <div className="terms-section-v2">
+                                    <div className="terms-header-v2">
+                                        <h3>서비스 이용 동의</h3>
+                                        <label className="all-check-v2">
+                                            <input type="checkbox" className="hidden-check-v2" />
+                                            <span className="check-box-v2"><span className="material-symbols-outlined">check</span></span>
+                                            <span>전체 동의</span>
                                         </label>
                                     </div>
-                                    <div className="terms-list">
-                                        <div className="term-item"><div className="dot"></div> Service Terms Agreement (Essential)</div>
-                                        <div className="term-item"><div className="dot"></div> Privacy Policy Agreement (Essential)</div>
-                                        <div className="term-item"><div className="dot"></div> Marketing Notifications (Optional)</div>
+                                    <div className="terms-list-v2">
+                                        <div className="term-item-v2"><div className="dot-v2"></div> 서비스 이용약관 동의 (필수)</div>
+                                        <div className="term-item-v2"><div className="dot-v2"></div> 개인정보 수집 및 이용 동의 (필수)</div>
+                                        <div className="term-item-v2"><div className="dot-v2"></div> 마케팅 정보 수신 동의 (선택)</div>
                                     </div>
                                 </div>
                             </form>
+                        </Card>
+
+                        <div className="login-prompt-v2">
+                            계정이 이미 있으신가요? <a href="/login">로그인</a>
+                        </div>
+
+                        <div className="security-badges-v2">
+                            <SecurityBadge icon="encrypted" label="데이터 암호화" color="blue" />
+                            <SecurityBadge icon="verified_user" label="안전한 보안 접속" color="green" />
+                            <SecurityBadge icon="policy" label="개인정보 보호 정책" color="gray" />
                         </div>
                     </div>
+                </main>
 
-                    {/* 하단 보안 뱃지 */}
-                    <div className="security-badges">
-                        <div className="badge">
-                            <div className="badge-icon blue"><span className="material-symbols-outlined">encrypted</span></div>
-                            <span>Encrypted</span>
-                        </div>
-                        <div className="badge">
-                            <div className="badge-icon green"><span className="material-symbols-outlined">verified_user</span></div>
-                            <span>Secure</span>
-                        </div>
-                        <div className="badge">
-                            <div className="badge-icon gray"><span className="material-symbols-outlined">policy</span></div>
-                            <span>Privacy First</span>
-                        </div>
+                <footer className="footer-v2">
+                    <p>© 2024 Jiphyeonjeon Team. All rights reserved.</p>
+                    <div className="footer-nav-v2">
+                        <a href="#">개인정보처리방침</a>
+                        <a href="#">이용약관</a>
+                        <a href="#">고객지원</a>
                     </div>
-                </div>
-            </main>
-
-            <footer className="signup-footer">
-                <p>© 2024 Jiphyeonjeon Team. All rights reserved.</p>
-                <div className="footer-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Use</a>
-                    <a href="#">Contact Support</a>
-                </div>
-            </footer>
-        </div>
+                </footer>
+            </div>
+        </MainLayout>
     );
 };
+
+const SecurityBadge = ({ icon, label, color }) => (
+    <div className="badge-v2">
+        <div className={`badge-icon-v2 ${color}`}>
+            <span className="material-symbols-outlined">{icon}</span>
+        </div>
+        <span>{label}</span>
+    </div>
+);
 
 export default SignupPage;

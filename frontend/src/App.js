@@ -6,6 +6,7 @@ import Registration from "./common/Registration";
 
 import RiskAnalysis from "./RiskAnalysis/RiskAnalysis";
 import RiskReport from "./RiskAnalysis/RiskReport";
+import Loan from "./LoanRecommendation/Loan";
 
 // router 설정 페이지입니다. 라우터 연결만!!
 
@@ -17,9 +18,13 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/registration" element={<Registration />} />
 
-                {/* RiskReport */}
+                {/* Risk Analysis */}
                 <Route path="/riskanalysis" element={<RiskAnalysis />} />
                 <Route path="/riskreport" element={<RiskReport />} />
+
+                {/* Loan Recommendation */}
+                <Route path="/loan" element={<Loan />} />
+
             </Routes>
         </BrowserRouter>
     );

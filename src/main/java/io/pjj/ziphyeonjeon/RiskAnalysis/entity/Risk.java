@@ -41,7 +41,6 @@ public class Risk {
     @Column(name = "LEGAL_ANALYSIS_RESULT", columnDefinition = "json")
     private String legalAnalysisResult;
 
-    // 생성자
     public Risk(Long propertyId, BigDecimal totalSafetyScore, String finalGrade, String disasterRiskGrade) {
         this.propertyId = propertyId;
         this.totalSafetyScore = totalSafetyScore;
@@ -50,7 +49,6 @@ public class Risk {
         this.analyzedAt = LocalDateTime.now();
     }
 
-    // Getter
     public Long getRiskResultId() {
         return riskResultId;
     }

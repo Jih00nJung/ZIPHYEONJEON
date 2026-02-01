@@ -1,5 +1,6 @@
 package io.pjj.ziphyeonjeon.RiskAnalysis.service;
 
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.DisasterDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,7 +9,7 @@ import java.util.*;
 
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.OcrDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.BuildingDTO;
-import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskResponseDTO;
+import io.pjj.ziphyeonjeon.RiskAnalysis.dto.RiskDTO;
 
 @Service
 public class RiskAnalysisService {
@@ -22,20 +23,26 @@ public class RiskAnalysisService {
     }
 
     // 재해 위험도 분석
-    public RiskResponseDTO<RiskResponseDTO.DisasterResponse> analyzeDisasterRisk(String address) {
-        List<RiskResponseDTO.DisasterResponse> disasterData = riskApiService.requestDisasterApi(address);
+    public RiskDTO<DisasterDTO.DisasterResponse> analyzeDisasterRisk(String address) {
+        List<DisasterDTO> rawData = riskApiService.requestDisasterApi(address);
 
-        int score = calculateDisasterScore(disasterData);
+        int score = calculateDisasterScore(rawData);
 
-        return new RiskResponseDTO<>(
+        DisasterDTO.DisasterResponse responseContent = new DisasterDTO.DisasterResponse(
+                address,
+                score,
+                rawData
+        );
+
+        return new RiskDTO<>(
                 "success",
-                address + " 지역 재해 분석 완료",
-                disasterData
+                "/RiskAnalysisService/analyzeDisasterRisk" + address,
+                List.of(responseContent)
         );
     }
 
     // 재해 위험 점수 계산
-    private int calculateDisasterScore(List<RiskResponseDTO.DisasterResponse> disasterData) {
+    private int calculateDisasterScore(List<DisasterDTO> disasterData) {
         int score = 100;
 
         // 감점 요인
@@ -52,17 +59,17 @@ public class RiskAnalysisService {
 
 
     // 건축물대장 위험도 분석
-    public RiskResponseDTO<RiskResponseDTO.BuildingResponse> analyzeBuildingRisk(String address) {
+    public RiskDTO<BuildingDTO.BuildingResponse> analyzeBuildingRisk(String address) {
         List<BuildingDTO> titles = riskApiService.requestBuildingApi(address);
 
         List<String> reasons = new ArrayList<>();
         int score = calculateBuildingScore(titles, reasons);
 
-        return new RiskResponseDTO<>("success", address + " 분석 완료",
-                List.of(new RiskResponseDTO.BuildingResponse(
+        return new RiskDTO<>("success", "/RiskAnalysisService/Building" + address,
+                List.of(new BuildingDTO.BuildingResponse(
                         address,
                         score,
-                        RiskResponseDTO.BuildingResponse.calculateBuildingLevel(score),
+                        BuildingDTO.BuildingResponse.calculateBuildingLevel(score),
                         reasons
                 ))
         );
@@ -101,15 +108,15 @@ public class RiskAnalysisService {
 
     // 등기부등본 요청 -> 추출 -> 점수 계산
     @Transactional
-    public RiskResponseDTO<RiskResponseDTO.RecordOfTitleResponse> analyzeRecordOfTitleRisk(String message, MultipartFile file) {
+    public RiskDTO<OcrDTO.RecordOfTitleResponse> analyzeRecordOfTitleRisk(String message, MultipartFile file) {
         OcrDTO ocrData = riskOcrService.requestOcrApi(message, file);
-        RiskResponseDTO.RecordOfTitleResponse RecordOfTitleResult = calculateRecordOfTitleScore(ocrData);
+        OcrDTO.RecordOfTitleResponse RecordOfTitleResult = calculateRecordOfTitleScore(ocrData);
 
-        return new RiskResponseDTO<>("success", "등기부등본 분석 완료", List.of(RecordOfTitleResult));
+        return new RiskDTO<>("success", "/RiskAnalysisService/RecordOfTitle", List.of(RecordOfTitleResult));
     }
 
     // 등기부등본 점수 계산
-    public RiskResponseDTO.RecordOfTitleResponse calculateRecordOfTitleScore(OcrDTO ocrData) {
+    public OcrDTO.RecordOfTitleResponse calculateRecordOfTitleScore(OcrDTO ocrData) {
         int score = 100;
         List<String> riskFactors = new ArrayList<>();
         String gapguIssue = "특이사항 없음";
@@ -155,6 +162,6 @@ public class RiskAnalysisService {
 
         score = Math.max(score, 0);
 
-        return new RiskResponseDTO.RecordOfTitleResponse(gapguIssue, score, riskFactors);
+        return new OcrDTO.RecordOfTitleResponse(gapguIssue, score, riskFactors);
     }
 }

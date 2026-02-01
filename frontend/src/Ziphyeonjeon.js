@@ -1,29 +1,29 @@
 import React from 'react';
 import './Ziphyeonjeon.css';
-
 import MainLayout from './layouts/MainLayout';
 import SearchContainer from "./components/SearchContainer";
-import ArchitectureSection, {ArchitectureCard} from './components/ArchitectureSection';
+import ArchitectureSection, { ArchitectureCard } from './components/ArchitectureSection';
 
 const Ziphyeonjeon = () => {
-
     return (
         <MainLayout>
-            <section className="main">
-                <div className="container main-layout">
-                    <div className="main-text">
-                        <div className="badge">안전한 부동산 거래의 시작</div>
-                        <h1 className="main-title">
-                            당신의 소중한 보증금,<br/>
-                            <span className="text-gradient">AI가 지켜드립니다</span>
+            <section className="main-v2">
+                <div className="container-v2">
+                    <div className="hero-content-v2">
+                        <div className="badge-v2">안전한 부동산 거래의 시작</div>
+                        <h1 className="hero-title-v2">
+                            당신의 소중한 보증금,<br />
+                            <span className="text-gradient-v2">AI가 지켜드립니다</span>
                         </h1>
-                        <p className="main-desc">
-                            Spring Boot와 AI 기반의 정밀 권리 분석으로<br/>
+                        <p className="hero-desc-v2">
+                            Spring Boot와 AI 기반의 정밀 권리 분석으로<br />
                             전세 사기 리스크를 사전에 차단합니다.
                         </p>
 
-                        <SearchContainer placeholderTxt={"도로명 주소 또는 지번을 입력하세요"} buttonName={`리스크 조회`}/>
-
+                        <SearchContainer
+                            placeholderTxt="도로명 주소 또는 지번을 입력하세요"
+                            buttonName="리스크 조회"
+                        />
                     </div>
                 </div>
             </section>
@@ -48,7 +48,6 @@ const Ziphyeonjeon = () => {
                     color="#f59e0b"
                 />
             </ArchitectureSection>
-
         </MainLayout>
     );
 };
