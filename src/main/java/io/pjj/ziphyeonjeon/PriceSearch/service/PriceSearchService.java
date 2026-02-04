@@ -574,15 +574,39 @@ public class PriceSearchService {
     // --- P-001: 국토부 실거래가 조회 (Spec 준수) ---
     public java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> searchMolit(
             io.pjj.ziphyeonjeon.PriceSearch.dto.request.MolitTradeSearchRequest request) {
-        // Spec: sigungu_code, building_type, deal_type, deal_year_month
-        // 실제 구현: DB에서 해당 조건 검색.
-        // 편의상 Sigungu Code -> Sigungu Name 변환 로직이 필요하나, 여기선 데모용으로 Code를 그대로 Sigungu 컬럼
-        // 매칭 시도하거나
-        // 또는 "전체 검색" 로직을 일부 활용.
-        // 여기서는 "기존 검색 로직"을 호출하되 파라미터를 최대한 매핑.
-        // 하지만 Address 기반이 아니므로, Code로 검색하는 별도 Repo 메서드가 없다면 빈 리스트 반환 혹은 구현 필요.
-        // 시간 관계상, "기능 구현됨"을 보여주기 위한 빈 리스트 혹은 기본 로직만 작성.
-        return new java.util.ArrayList<>();
+
+        java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> results = new java.util.ArrayList<>();
+
+        String sigungu = request.getSigungu_name();
+        String type = request.getBuilding_type();
+        String yyyyMM = request.getDeal_year_month();
+
+        if (sigungu == null || type == null || yyyyMM == null) {
+            return results;
+        }
+
+        if (type.contains("아파트")) {
+            // Apartment
+            java.util.List<io.pjj.ziphyeonjeon.batch.molit.MolitAptSaleRawEntity> entities = aptSaleRepo
+                    .findBySigunguContainingAndContractYyyymm(sigungu, yyyyMM);
+            entities.forEach(e -> results.add(toDto(e)));
+
+        } else if (type.contains("빌라") || type.contains("연립") || type.contains("다세대")) {
+            // Villa
+            try {
+                Integer ym = Integer.parseInt(yyyyMM);
+                java.util.List<io.pjj.ziphyeonjeon.batch.molit.MolitVillaSaleRawEntity> entities = villaSaleRepo
+                        .findBySigunguContainingAndContractYm(sigungu, ym);
+                entities.forEach(e -> results.add(toDto(e)));
+            } catch (NumberFormatException e) {
+                // Invalid Date format
+            }
+        } else if (type.contains("오피스텔")) {
+            // Officetel (Skipped for now as repo update needed, return empty or implement
+            // later)
+        }
+
+        return results;
     }
 
     // --- P-002: 서울시 실거래가 조회 (Spec 준수) ---

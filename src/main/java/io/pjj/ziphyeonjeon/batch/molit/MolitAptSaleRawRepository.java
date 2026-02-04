@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MolitAptSaleRawRepository extends JpaRepository<MolitAptSaleRawEntity, Long> {
+        // For P-001 Search
+        List<MolitAptSaleRawEntity> findBySigunguContainingAndContractYyyymm(String sigungu, String contractYyyymm);
+
         // 도로명 검색 (ex: 테헤란로 123)
         List<MolitAptSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(
                         String sigungu, String roadName);

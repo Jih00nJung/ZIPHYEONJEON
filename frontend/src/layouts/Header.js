@@ -34,6 +34,13 @@ const Header = () => {
             children: [
                 { label: '대출', link: '/loan' },
             ]
+        },
+        {
+            label: '시세 조회',
+            link: '/price-search',
+            children: [
+                { label: '통합 시세 조회', link: '/price-search' }
+            ]
         }
     ];
 

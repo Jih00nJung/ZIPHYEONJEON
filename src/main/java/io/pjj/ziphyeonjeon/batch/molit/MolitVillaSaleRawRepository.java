@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MolitVillaSaleRawRepository extends JpaRepository<MolitVillaSaleRawEntity, Long> {
+        // For P-001 Search
+        List<MolitVillaSaleRawEntity> findBySigunguContainingAndContractYm(String sigungu, Integer contractYm);
+
         // 빌라/오피스텔은 'BEONJI' 컬럼 사용
         List<MolitVillaSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(
                         String sigungu,
