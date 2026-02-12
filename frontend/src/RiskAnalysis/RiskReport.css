@@ -1,25 +1,25 @@
 /* RiskReport.css - Refactored for Common Components */
 
-.risk-report-page-v2 {
+.risk-report-page-v1 {
     background-color: var(--slate-50);
     min-height: calc(100vh - 80px);
     padding: 40px 0;
 }
 
-.dashboard-container-v2 {
+.dashboard-container-v1 {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px;
 }
 
 /* Process Steps */
-.process-section-v2 {
+.process-section-v1 {
     margin-bottom: 40px;
     position: relative;
     padding: 0 40px;
 }
 
-.progress-track-v2 {
+.progress-track-v1 {
     height: 4px;
     background: var(--slate-100);
     border-radius: 2px;
@@ -30,20 +30,20 @@
     z-index: 1;
 }
 
-.progress-fill-v2 {
+.progress-fill-v1 {
     height: 100%;
     background: var(--primary);
     border-radius: 2px;
 }
 
-.steps-container-v2 {
+.steps-container-v1 {
     display: flex;
     justify-content: space-between;
     position: relative;
     z-index: 2;
 }
 
-.step-v2 {
+.step-v1 {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -51,7 +51,7 @@
     text-align: center;
 }
 
-.circle-v2 {
+.circle-v1 {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -63,61 +63,61 @@
     color: var(--slate-400);
 }
 
-.step-v2.active .circle-v2 {
+.step-v1.active .circle-v1 {
     background: var(--primary);
     border-color: var(--primary);
     color: white;
 }
 
-.step-v2.current .circle-v2 {
+.step-v1.current .circle-v1 {
     border-color: var(--primary);
     color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-light);
 }
 
-.step-v2 p {
+.step-v1 p {
     font-size: 11px;
     font-weight: 800;
     color: var(--slate-400);
     line-height: 1.4;
 }
 
-.step-v2.active p,
-.step-v2.current p {
+.step-v1.active p,
+.step-v1.current p {
     color: var(--slate-800);
 }
 
-.layout-grid-v2 {
+.layout-grid-v1 {
     display: grid;
     grid-template-columns: 1fr 340px;
     gap: 32px;
 }
 
-.main-content-v2 {
+.main-content-v1 {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
 /* Safety Card Custom */
-.safety-flex-v2 {
+.safety-flex-v1 {
     display: flex;
     align-items: center;
     gap: 40px;
 }
 
-.score-circle-v2 {
+.score-circle-v1 {
     position: relative;
     width: 140px;
     height: 140px;
     flex-shrink: 0;
 }
 
-.score-circle-v2 svg {
+.score-circle-v1 svg {
     transform: rotate(-90deg);
 }
 
-.score-info-v2 {
+.score-info-v1 {
     position: absolute;
     top: 0;
     left: 0;
@@ -129,39 +129,39 @@
     justify-content: center;
 }
 
-.score-info-v2 .val-v2 {
+.score-info-v1 .val-v1 {
     font-size: 42px;
     font-weight: 900;
     color: var(--slate-900);
 }
 
-.score-info-v2 .lbl-v2 {
+.score-info-v1 .lbl-v1 {
     font-size: 10px;
     font-weight: 800;
     color: var(--slate-400);
     letter-spacing: 0.05em;
 }
 
-.score-desc-v2 h2 {
+.score-desc-v1 h2 {
     font-size: 24px;
     font-weight: 800;
     margin: 0 0 8px 0;
 }
 
-.score-desc-v2 p {
+.score-desc-v1 p {
     font-size: 15px;
     color: var(--slate-500);
     line-height: 1.6;
     margin-bottom: 24px;
 }
 
-.mini-stats-v2 {
+.mini-stats-v1 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.small-stat-v2 .lbl-row-v2 {
+.small-stat-v1 .lbl-row-v1 {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
@@ -169,45 +169,45 @@
     margin-bottom: 6px;
 }
 
-.bar-v2 {
+.bar-v1 {
     height: 6px;
     background: var(--slate-100);
     border-radius: 3px;
     overflow: hidden;
 }
 
-.fill-v2 {
+.fill-v1 {
     height: 100%;
     border-radius: 3px;
 }
 
-.fill-v2.blue {
+.fill-v1.blue {
     background: var(--primary);
 }
 
-.fill-v2.green {
+.fill-v1.green {
     background: #34D399;
 }
 
-.fill-v2.yellow {
+.fill-v1.yellow {
     background: #FBBF24;
 }
 
 /* Details Grid */
-.details-grid-v2 {
+.details-grid-v1 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.detail-item-v2 h4 {
+.detail-item-v1 h4 {
     font-size: 15px;
     font-weight: 800;
     margin: 0 0 16px 0;
     color: var(--slate-800);
 }
 
-.info-row-v2 {
+.info-row-v1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -217,7 +217,7 @@
     color: var(--slate-600);
 }
 
-.progress-bar-v2 {
+.progress-bar-v1 {
     height: 8px;
     background: var(--slate-100);
     border-radius: 4px;
@@ -226,34 +226,34 @@
     display: flex;
 }
 
-.progress-bar-v2 .segment.safe {
+.progress-bar-v1 .segment.safe {
     background: #34D399;
 }
 
-.progress-bar-v2 .segment.caution {
+.progress-bar-v1 .segment.caution {
     background: #FBBF24;
 }
 
-.price-v2 {
+.price-v1 {
     font-size: 24px;
     font-weight: 900;
     color: var(--slate-900);
     margin-bottom: 12px;
 }
 
-.price-v2 small {
+.price-v1 small {
     font-size: 14px;
     font-weight: 700;
     color: var(--slate-400);
 }
 
-.mini-grid-v2 {
+.mini-grid-v1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-.info-box-v2 {
+.info-box-v1 {
     background: var(--slate-50);
     padding: 12px;
     border-radius: 12px;
@@ -262,43 +262,43 @@
     gap: 4px;
 }
 
-.info-box-v2 span {
+.info-box-v1 span {
     font-size: 11px;
     color: var(--slate-400);
     font-weight: 700;
 }
 
-.info-box-v2 strong {
+.info-box-v1 strong {
     font-size: 15px;
     color: var(--slate-800);
     font-weight: 800;
 }
 
 /* Sidebar */
-.sidebar-v2 {
+.sidebar-v1 {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.sidebar-card-v2 h3 {
+.sidebar-card-v1 h3 {
     font-size: 18px;
     font-weight: 800;
     margin: 0 0 20px 0;
 }
 
-.summary-list-v2 {
+.summary-list-v1 {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.summary-item-v2 {
+.summary-item-v1 {
     display: flex;
     gap: 12px;
 }
 
-.summary-item-v2 .icon-v2 {
+.summary-item-v1 .icon-v1 {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -308,23 +308,23 @@
     flex-shrink: 0;
 }
 
-.summary-item-v2.green .icon-v2 {
+.summary-item-v1.green .icon-v1 {
     background: #ECFDF5;
     color: #059669;
 }
 
-.summary-item-v2.yellow .icon-v2 {
+.summary-item-v1.yellow .icon-v1 {
     background: #FFFBEB;
     color: #D97706;
 }
 
-.summary-item-v2 strong {
+.summary-item-v1 strong {
     font-size: 14px;
     font-weight: 800;
     color: var(--slate-800);
 }
 
-.summary-item-v2 p {
+.summary-item-v1 p {
     font-size: 12px;
     color: var(--slate-500);
     margin: 2px 0 0 0;
@@ -371,11 +371,11 @@
 }
 
 @media (max-width: 1024px) {
-    .layout-grid-v2 {
+    .layout-grid-v1 {
         grid-template-columns: 1fr;
     }
 
-    .details-grid-v2 {
+    .details-grid-v1 {
         grid-template-columns: 1fr;
     }
 }
