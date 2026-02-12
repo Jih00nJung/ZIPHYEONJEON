@@ -10,9 +10,10 @@ import {
     IoCheckmark,
     IoArrowForwardOutline
 } from "react-icons/io5";
+import {useNavigate} from "react-router-dom";
 
 const RiskAnalysis = () => {
-
+    const navigate = useNavigate();
     const [address, setAddress] = useState('');
     const [isSearched, setIsSearched] = useState(false);
 
@@ -102,6 +103,16 @@ const RiskAnalysis = () => {
             console.log(`${address}에 대한 데이터 요청...`);
             const responses = await Promise.all(requests);
 
+            const analysisResult = {
+                address: address,
+                disasterData: agreements.disaster ? responses[0]?.data : null,
+                buildingData: agreements.building ? responses[agreements.disaster ? 1 : 0]?.data : null,
+                ocrData: file ? responses[responses.length - 1]?.data : null,
+                allResponses: responses.map(res => res.data)
+            };
+
+            navigate('/riskreport', { state: { result: analysisResult } });
+
             responses.forEach((res, index) => {
                 console.log(`응답 데이터 [${index}]:`, res.data);
             });
@@ -127,7 +138,8 @@ const RiskAnalysis = () => {
                         <h2 className="title">종합 위험도 분석하기</h2>
                         <p className="description">
                             부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br/>
-                            집현전이 법적 및 시세 위험을 분석해 드립니다.
+                            집현전이 법적 및 시세 위험을 분석해 드립니다. <br/>
+                            예제 주소: 서울특별시 종로구 경운동 64-17
                         </p>
                     </section>
 

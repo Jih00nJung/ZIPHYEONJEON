@@ -46,12 +46,8 @@ public class RiskAnalysisService {
         int score = 100;
 
         // 감점 요인
-        if (disasterData.size() >= 10) {
-            score -= 30;
-        } else if (disasterData.size() >= 5) {
-            score -= 15;
-        } else if (!disasterData.isEmpty()) {
-            score -= 5;
+        if (!disasterData.isEmpty()) {
+            score -= (5 * disasterData.size());
         }
 
         return Math.max(score, 0);
@@ -80,7 +76,7 @@ public class RiskAnalysisService {
         int score = 100;
         if (titles.isEmpty()) {
             factors.add("조회된 건축물 정보가 없습니다.");
-            return 0;
+            return 100;
         }
 
         BuildingDTO title = titles.getFirst();
