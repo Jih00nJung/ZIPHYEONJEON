@@ -86,85 +86,151 @@ public class PriceSearchService {
         );
     }
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PriceSearchService.class);
+
     public java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> searchByAddress(
             String rawAddress) {
+        log.info("Searching by address: {}", rawAddress);
         java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> results = new java.util.ArrayList<>();
 
         // 1. Vworld 주소 검색 (정제)
-        VworldSearchResponse search = vworldSearchClient.searchJuso(rawAddress);
+        VworldSearchResponse search = null;
+        try {
+            search = vworldSearchClient.searchJuso(rawAddress);
+        } catch (Exception e) {
+            log.error("Vworld search failed", e);
+            // Vworld 실패 시에도 진행 가능한지? -> 주소 파싱 안되면 불가.
+            return results;
+        }
+
         if (search == null || search.result == null || search.result.items == null || search.result.items.isEmpty()) {
+            log.warn("Vworld search returned no items for: {}", rawAddress);
             return results;
         }
 
         VworldSearchResponse.Item item = search.result.items.get(0);
         String roadAddr = item.road; // "서울특별시 강남구 테헤란로 123"
         String jibunAddr = item.parcel; // "서울특별시 강남구 역삼동 123-45"
+        log.info("Vworld parsed: road={}, jibun={}", roadAddr, jibunAddr);
 
         // 파싱 로직
         String sigungu = parseSigungu(jibunAddr != null ? jibunAddr : rawAddress);
         String roadName = parseRoadName(roadAddr);
         String jibunBeonji = parseJibunBeonji(jibunAddr);
+        log.info("Parsed conditions: sigungu={}, roadName={}, jibunBeonji={}", sigungu, roadName, jibunBeonji);
 
         // 2. DB 조회 (아파트)
         if (sigungu != null) {
-            // (1) 아파트 매매
-            if (roadName != null) {
-                aptSaleRepo
-                        .findBySigunguAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
+            // "서울특별시 은평구" -> "은평구"로 검색 (DB 포맷 불일치 대응)
+            String searchSigungu = sigungu;
+            if (sigungu.contains(" ")) {
+                String[] tokens = sigungu.split(" ");
+                if (tokens.length >= 2) {
+                    searchSigungu = tokens[1];
+                }
             }
-            if (jibunBeonji != null) {
-                aptSaleRepo
-                        .findBySigunguAndJibunContainingOrderByContractYyyymmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
-            }
+            log.info("Searching with Sigungu: original='{}', used='{}'", sigungu, searchSigungu);
 
-            // (2) 아파트 전월세
-            if (roadName != null) {
-                aptRentRepo
-                        .findBySigunguAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
-            }
-            if (jibunBeonji != null) {
-                aptRentRepo
-                        .findBySigunguAndJibunContainingOrderByContractYyyymmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
-            }
+            try {
+                // (1) 아파트 매매
+                if (roadName != null) {
+                    aptSaleRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+                if (jibunBeonji != null) {
+                    aptSaleRepo
+                            .findBySigunguContainingAndJibunContainingOrderByContractYyyymmDescContractDayDesc(
+                                    searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
 
-            // (3) 빌라/오피스텔 매매
-            if (roadName != null) {
-                villaSaleRepo.findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
-                officetelSaleRepo
-                        .findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
-            }
-            if (jibunBeonji != null) {
-                villaSaleRepo.findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
-                officetelSaleRepo
-                        .findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
-            }
+                    // Fallback: JIBUN 컬럼이 정확지 않을 경우, 동 + 본번으로 검색 시도
+                    try {
+                        String dong = parseJibunDong(jibunAddr);
+                        log.info("Fallback Search Try: sigungu='{}', dong='{}', jibunBeonji='{}'", searchSigungu, dong,
+                                jibunBeonji);
 
-            // (4) 빌라/오피스텔 전월세
-            if (roadName != null) {
-                villaRentRepo.findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
-                officetelRentRepo
-                        .findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(sigungu, roadName)
-                        .forEach(e -> results.add(toDto(e)));
-            }
-            if (jibunBeonji != null) {
-                villaRentRepo.findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
-                officetelRentRepo
-                        .findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(sigungu, jibunBeonji)
-                        .forEach(e -> results.add(toDto(e)));
+                        if (dong != null && jibunBeonji != null) {
+                            String bonbun = jibunBeonji;
+                            if (jibunBeonji.contains("-")) {
+                                bonbun = jibunBeonji.split("-")[0];
+                            }
+                            // 본번 Loose 검색
+                            aptSaleRepo
+                                    .findBySigunguContainingAndEupmyeondongContainingAndBonbunContainingOrderByContractYyyymmDescContractDayDesc(
+                                            searchSigungu, dong, bonbun)
+                                    .forEach(e -> results.add(toDto(e)));
+                        }
+                    } catch (Exception e) {
+                        log.warn("Fallback search failed: {}", e.getMessage());
+                    }
+                }
+
+                // (2) 아파트 전월세
+                if (roadName != null) {
+                    aptRentRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+                if (jibunBeonji != null) {
+                    aptRentRepo
+                            .findBySigunguContainingAndJibunContainingOrderByContractYyyymmDescContractDayDesc(
+                                    searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+
+                // (3) 빌라/오피스텔 매매
+                if (roadName != null) {
+                    villaSaleRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                    officetelSaleRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+                if (jibunBeonji != null) {
+                    villaSaleRepo.findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+                            searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
+                    officetelSaleRepo
+                            .findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+
+                // (4) 빌라/오피스텔 전월세
+                if (roadName != null) {
+                    villaRentRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                    officetelRentRepo
+                            .findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, roadName)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+                if (jibunBeonji != null) {
+                    villaRentRepo.findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+                            searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
+                    officetelRentRepo
+                            .findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+                                    searchSigungu, jibunBeonji)
+                            .forEach(e -> results.add(toDto(e)));
+                }
+            } catch (Exception e) {
+                log.error("Database query failed during address search", e);
+                // DB 오류가 나더라도 부분 결과라도 리턴? 아니면 에러 전파?
+                // 현재는 로깅하고 빈 결과 리턴 방지 위해 에러 던지지 않음 (디버깅 목적)
             }
         }
 
         // 중복 제거 (도로명, 지번 둘 다 검색될 경우) 및 정렬 (최신순)
+        log.info("Total results found: {}", results.size());
         return results.stream()
                 .distinct()
                 .sorted((a, b) -> {
@@ -609,6 +675,24 @@ public class PriceSearchService {
         return results;
     }
 
+    public java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> searchByComplexName(
+            String complexName) {
+        log.info("Searching complex by name: {}", complexName);
+        java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> results = new java.util.ArrayList<>();
+
+        try {
+            // 202401 이후 데이터 조회
+            java.util.List<io.pjj.ziphyeonjeon.batch.molit.MolitAptSaleRawEntity> entities = aptSaleRepo
+                    .findByComplexNameContainingAndContractYyyymmGreaterThanEqualOrderByContractYyyymmDescContractDayDesc(
+                            complexName, "202401");
+            log.info("Complex search found {} entities", entities.size());
+            entities.forEach(e -> results.add(toDto(e)));
+        } catch (Exception e) {
+            log.error("Complex search failed", e);
+        }
+        return results;
+    }
+
     // --- P-002: 서울시 실거래가 조회 (Spec 준수) ---
     public java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> searchSeoul(
             io.pjj.ziphyeonjeon.PriceSearch.dto.request.SeoulTradeSearchRequest request) {
@@ -641,7 +725,7 @@ public class PriceSearchService {
         // 제대로 하려면 Repository에 `findBySigungu` 메서드를 추가해야 함.
         // *시간 관계상, '역삼동' 데이터로 예시 출력.
         java.util.List<io.pjj.ziphyeonjeon.batch.molit.MolitAptSaleRawEntity> list = aptSaleRepo
-                .findBySigunguAndJibunContainingOrderByContractYyyymmDescContractDayDesc(sigungu, "역삼동");
+                .findBySigunguContainingAndJibunContainingOrderByContractYyyymmDescContractDayDesc(sigungu, "역삼동");
 
         // 3. Generate CSV
         StringBuilder csv = new StringBuilder();

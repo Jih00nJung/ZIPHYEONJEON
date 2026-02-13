@@ -43,10 +43,9 @@ public class MolitAptCsvIngestService {
                 .filter(p -> p.toString().endsWith(".csv"))
                 .filter(p -> {
                     String s = p.toString();
-                    // 이번 요청사항: 아파트는 제외하고 빌라/오피스텔만 포함
-                    if (s.contains(File.separator + "apt" + File.separator))
-                        return false;
-                    return s.contains(File.separator + "villa" + File.separator) ||
+                    // 아파트, 빌라, 오피스텔 모두 포함
+                    return s.contains(File.separator + "apt" + File.separator) ||
+                            s.contains(File.separator + "villa" + File.separator) ||
                             s.contains(File.separator + "officetel" + File.separator);
                 })
                 .forEach(p -> {
@@ -62,6 +61,11 @@ public class MolitAptCsvIngestService {
                                 ingestOfficetelSale(p);
                             else if (s.contains(File.separator + "rent" + File.separator))
                                 ingestOfficetelRent(p);
+                        } else if (s.contains(File.separator + "apt" + File.separator)) {
+                            if (s.contains(File.separator + "sale" + File.separator))
+                                ingestAptSale(p);
+                            else if (s.contains(File.separator + "rent" + File.separator))
+                                ingestAptRent(p);
                         }
                     } catch (Exception e) {
                         throw new RuntimeException("INGEST FAIL: " + p + " / " + e.getMessage(), e);

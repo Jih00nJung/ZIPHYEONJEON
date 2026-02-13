@@ -2,6 +2,30 @@ import axios from 'axios';
 
 const API_BASE_URL = '/api/price';
 
+export const searchByComplexName = async (complexName) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/search/complex`, {
+            params: { complexName }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Complex Search Error:', error);
+        throw error;
+    }
+};
+
+export const searchBySpecificAddress = async (address) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/search`, {
+            params: { address }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Address Search Error:', error);
+        throw error;
+    }
+};
+
 export const searchMolitTrade = async (params) => {
     // params: { sigungu_code, building_type, deal_type, deal_year_month }
     try {

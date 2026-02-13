@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MolitOfficetelSaleRawRepository extends JpaRepository<MolitOfficetelSaleRawEntity, Long> {
-        List<MolitOfficetelSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+        List<MolitOfficetelSaleRawEntity> findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
                         String sigungu, String roadName);
 
-        List<MolitOfficetelSaleRawEntity> findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+        List<MolitOfficetelSaleRawEntity> findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
                         String sigungu, String beonji);
 
         @Query("SELECT AVG(m.dealAmountMan) FROM MolitOfficetelSaleRawEntity m " +

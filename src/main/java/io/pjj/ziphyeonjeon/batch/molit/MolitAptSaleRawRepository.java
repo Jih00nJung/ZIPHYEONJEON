@@ -10,14 +10,22 @@ public interface MolitAptSaleRawRepository extends JpaRepository<MolitAptSaleRaw
         // For P-001 Search
         List<MolitAptSaleRawEntity> findBySigunguContainingAndContractYyyymm(String sigungu, String contractYyyymm);
 
+        // 아파트 단지명 검색 (2024년 이후)
+        List<MolitAptSaleRawEntity> findByComplexNameContainingAndContractYyyymmGreaterThanEqualOrderByContractYyyymmDescContractDayDesc(
+                        String complexName, String startYm);
+
         // 도로명 검색 (ex: 테헤란로 123)
-        List<MolitAptSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(
+        List<MolitAptSaleRawEntity> findBySigunguContainingAndRoadNameContainingOrderByContractYyyymmDescContractDayDesc(
                         String sigungu, String roadName);
 
         // 지번 검색 (ex: 역삼동 123-45) -> 아파트는 JIBUN 컬럼 사용
-        List<MolitAptSaleRawEntity> findBySigunguAndJibunContainingOrderByContractYyyymmDescContractDayDesc(
+        List<MolitAptSaleRawEntity> findBySigunguContainingAndJibunContainingOrderByContractYyyymmDescContractDayDesc(
                         String sigungu,
                         String jibun);
+
+        // 보완: 지번 컬럼이 비어있거나 포맷이 다를 경우를 대비해 동+본번 검색 추가
+        List<MolitAptSaleRawEntity> findBySigunguContainingAndEupmyeondongContainingAndBonbunContainingOrderByContractYyyymmDescContractDayDesc(
+                        String sigungu, String eupmyeondong, String bonbun);
 
         @Query("SELECT AVG(m.dealAmountMan) FROM MolitAptSaleRawEntity m " +
                         "WHERE m.sigungu = :sigungu " +

@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface MolitVillaRentRawRepository extends JpaRepository<MolitVillaRentRawEntity, Long> {
-        List<MolitVillaRentRawEntity> findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+        List<MolitVillaRentRawEntity> findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
                         String sigungu,
                         String roadName);
 
-        List<MolitVillaRentRawEntity> findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+        List<MolitVillaRentRawEntity> findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
                         String sigungu,
                         String beonji);
 

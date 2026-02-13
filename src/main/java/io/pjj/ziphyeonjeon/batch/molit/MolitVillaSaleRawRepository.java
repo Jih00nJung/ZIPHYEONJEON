@@ -11,11 +11,11 @@ public interface MolitVillaSaleRawRepository extends JpaRepository<MolitVillaSal
         List<MolitVillaSaleRawEntity> findBySigunguContainingAndContractYm(String sigungu, Integer contractYm);
 
         // 빌라/오피스텔은 'BEONJI' 컬럼 사용
-        List<MolitVillaSaleRawEntity> findBySigunguAndRoadNameContainingOrderByContractYmDescContractDayDesc(
+        List<MolitVillaSaleRawEntity> findBySigunguContainingAndRoadNameContainingOrderByContractYmDescContractDayDesc(
                         String sigungu,
                         String roadName);
 
-        List<MolitVillaSaleRawEntity> findBySigunguAndBeonjiContainingOrderByContractYmDescContractDayDesc(
+        List<MolitVillaSaleRawEntity> findBySigunguContainingAndBeonjiContainingOrderByContractYmDescContractDayDesc(
                         String sigungu, String beonji);
 
         @Query("SELECT AVG(m.dealAmountMan) FROM MolitVillaSaleRawEntity m " +

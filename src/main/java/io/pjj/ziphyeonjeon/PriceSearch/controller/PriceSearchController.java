@@ -22,6 +22,11 @@ public class PriceSearchController {
         return priceSearchService.searchByAddress(address);
     }
 
+    @GetMapping("/search/complex")
+    public List<PriceSearchResultResponse> searchByComplexName(@RequestParam String complexName) {
+        return priceSearchService.searchByComplexName(complexName);
+    }
+
     // P-001
     @GetMapping("/molit")
     public List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceSearchResultResponse> searchMolit(
