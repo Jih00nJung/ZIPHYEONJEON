@@ -7,16 +7,16 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OcrDTO(
-        List<String> extractedTexts,    // ], [
+        List<String> extractedTexts,
         String rawResult                // 원본
 ) {
     public record RecordOfTitleResponse(
             String gapguIssue,
-            int score,
+            Integer score,
             List<String> riskFactors
 
     ) {
-        public static String calculateRecordOfTitleLevel(int score) {
+        public static String calculateRecordOfTitleLevel(Integer score) {
             if (score >= 90) return "안전";
             if (score >= 70) return "주의";
             return "위험";

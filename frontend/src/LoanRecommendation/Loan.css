@@ -1,37 +1,37 @@
 /* Loan.css - Refactored for Common Components */
 
-.loan-page-v2 {
+.loan-page-loan {
     background-color: var(--slate-50);
     min-height: calc(100vh - 80px);
     padding: 60px 0;
 }
 
-.dashboard-container-v2 {
+.dashboard-container-loan {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px;
 }
 
-.layout-grid-v2 {
+.layout-grid-loan {
     display: grid;
     grid-template-columns: 1fr 320px;
     gap: 32px;
 }
 
-.main-content-v2 {
+.main-content-loan {
     display: flex;
     flex-direction: column;
     gap: 40px;
 }
 
-.section-header-v2 {
+.section-header-loan {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
 }
 
-.section-title-v2 {
+.section-title-loan {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -44,49 +44,49 @@
     color: var(--primary);
 }
 
-.product-grid-v2 {
+.product-grid-loan {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.loan-card-v2 {
+.loan-card-loan {
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-.loan-card-v2:hover {
+.loan-card-loan:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
 }
 
-.loan-title-v2 {
+.loan-title-loan {
     font-size: 18px;
     font-weight: 800;
     color: var(--slate-800);
     margin: 0 0 12px 0;
 }
 
-.loan-rate-box-v2 {
+.loan-rate-box-loan {
     font-size: 14px;
     color: var(--slate-500);
     margin-bottom: 16px;
 }
 
-.loan-rate-value-v2 {
+.loan-rate-value-loan {
     font-size: 24px;
     font-weight: 900;
     color: var(--primary);
 }
 
-.benefit-list-v2 {
+.benefit-list-loan {
     list-style: none;
     padding: 0;
     margin: 0 auto 0 0;
 }
 
-.benefit-list-v2 li {
+.benefit-list-loan li {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -95,31 +95,31 @@
     margin-bottom: 8px;
 }
 
-.benefit-list-v2 .material-symbols-outlined {
+.benefit-list-loan .material-symbols-outlined {
     font-size: 16px;
     color: var(--primary);
 }
 
 /* Table Section */
-.table-header-v2 {
+.table-header-loan {
     padding: 32px 32px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.update-time-v2 {
+.update-time-loan {
     font-size: 13px;
     color: var(--slate-400);
 }
 
-.comparison-table-v2 {
+.comparison-table-loan {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
 }
 
-.comparison-table-v2 th {
+.comparison-table-loan th {
     padding: 12px 32px;
     text-align: left;
     font-size: 13px;
@@ -127,20 +127,20 @@
     border-bottom: 1px solid var(--slate-50);
 }
 
-.comparison-table-v2 td {
+.comparison-table-loan td {
     padding: 20px 32px;
     font-size: 14px;
     color: var(--slate-700);
     border-bottom: 1px solid var(--slate-50);
 }
 
-.bank-info-v2 {
+.bank-info-loan {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.bank-logo-v2 {
+.bank-logo-loan {
     width: 32px;
     height: 32px;
     border-radius: 8px;
@@ -152,12 +152,12 @@
     background: #eee;
 }
 
-.rate-td-v2 {
+.rate-td-loan {
     font-weight: 800;
     color: var(--primary);
 }
 
-.table-footer-btn-v2 {
+.table-footer-btn-loan {
     width: 100%;
     padding: 20px;
     background: none;
@@ -172,18 +172,18 @@
     transition: color 0.2s;
 }
 
-.table-footer-btn-v2:hover {
+.table-footer-btn-loan:hover {
     color: var(--primary);
 }
 
 /* Sidebar */
-.sidebar-v2 {
+.sidebar-loan {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.sidebar-header-v2 {
+.sidebar-header-loan {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -192,17 +192,17 @@
     margin-bottom: 20px;
 }
 
-.credit-score-v2 {
+.credit-score-loan {
     text-align: center;
     margin-bottom: 24px;
 }
 
-.credit-score-v2 .label-v2 {
+.credit-score-loan .label-loan {
     font-size: 13px;
     color: var(--slate-500);
 }
 
-.credit-score-v2 .score-v2 {
+.credit-score-loan .score-loan {
     display: flex;
     align-items: baseline;
     justify-content: center;
@@ -210,7 +210,7 @@
     margin: 8px 0;
 }
 
-.credit-score-v2 .score-v2 input {
+.credit-score-loan .score-loan input {
     width: 80px;
     font-size: 32px;
     font-weight: 900;
@@ -220,18 +220,18 @@
     text-align: right;
 }
 
-.credit-score-v2 .score-v2 span {
+.credit-score-loan .score-loan span {
     font-size: 16px;
     font-weight: 700;
     color: var(--slate-400);
 }
 
-.credit-score-v2 .desc-v2 {
+.credit-score-loan .desc-loan {
     font-size: 11px;
     color: var(--slate-400);
 }
 
-.sidebar-links-v2 {
+.sidebar-links-loan {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
@@ -240,7 +240,7 @@
     border-top: 1px dashed var(--slate-200);
 }
 
-.link-item-v2 {
+.link-item-loan {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -250,13 +250,13 @@
     cursor: pointer;
 }
 
-.sidebar-tip-v2 h4 {
+.sidebar-tip-loan h4 {
     font-size: 16px;
     font-weight: 800;
     margin: 0 0 10px 0;
 }
 
-.sidebar-tip-v2 p {
+.sidebar-tip-loan p {
     font-size: 13px;
     color: var(--slate-500);
     line-height: 1.6;
@@ -284,21 +284,21 @@
     color: var(--primary) !important;
 }
 
-.loan-footer-notice-v2 {
+.loan-footer-notice-loan {
     margin-top: 60px;
     padding: 32px;
     background: var(--slate-100);
     border-radius: 20px;
 }
 
-.loan-footer-notice-v2 h4 {
+.loan-footer-notice-loan h4 {
     font-size: 15px;
     font-weight: 800;
     color: var(--slate-800);
     margin-bottom: 12px;
 }
 
-.loan-footer-notice-v2 ul {
+.loan-footer-notice-loan ul {
     list-style: disc;
     padding-left: 20px;
     color: var(--slate-500);
@@ -306,11 +306,11 @@
 }
 
 @media (max-width: 1024px) {
-    .layout-grid-v2 {
+    .layout-grid-loan {
         grid-template-columns: 1fr;
     }
 
-    .product-grid-v2 {
+    .product-grid-loan {
         grid-template-columns: 1fr 1fr;
     }
 }
