@@ -32,7 +32,7 @@ const RiskReport = () => {
 
     const averageScore = Math.round(
         ((resultData.disasterData.data[0].score || 0) +
-            (resultData.buildingData.data[0].finalScore || 0) +
+            (resultData.buildingData.data[0].score || 0) +
             (resultData.ocrData.data[0].score || 0)) / 3
     )
 
@@ -50,15 +50,15 @@ const RiskReport = () => {
 
     return (
         <MainLayout>
-            <div className="risk-report-page-v1">
-                <div className="dashboard-container-v1">
+            <div className="risk-report-page-risk">
+                <div className="dashboard-container-risk">
 
                     {/* Process Steps */}
-                    <section className="process-section-v1">
-                        <div className="progress-track-v1">
-                            <div className="progress-fill-v1" style={{width: '55%'}}></div>
+                    <section className="process-section-risk">
+                        <div className="progress-track-risk">
+                            <div className="progress-fill-risk" style={{width: '55%'}}></div>
                         </div>
-                        <div className="steps-container-v1">
+                        <div className="steps-container-risk">
                             <Step icon="location_on" label="주소<br/>분석" active/>
                             <Step icon="fact_check" label="등기부등본<br/>확인" active/>
                             <Step icon="analytics" label="위험성<br/>평가" current/>
@@ -77,11 +77,11 @@ const RiskReport = () => {
                         }
                     />
 
-                    <div className="layout-grid-v1">
-                        <div className="main-content-v1">
-                            <Card className="safety-card-v1" padding="40px">
-                                <div className="safety-flex-v1">
-                                    <div className="score-circle-v1">
+                    <div className="layout-grid-risk">
+                        <div className="main-content-risk">
+                            <Card className="safety-card-risk" padding="40px">
+                                <div className="safety-flex-risk">
+                                    <div className="score-circle-risk">
                                         <svg viewBox="0 0 100 100">
                                             <circle
                                                 cx="50" cy="50" r="45"
@@ -96,12 +96,12 @@ const RiskReport = () => {
                                                 style={{transition: 'stroke-dashoffset 0.5s ease-in-out'}}
                                             />
                                         </svg>
-                                        <div className="score-info-v1">
-                                            <span className="val-v1">{averageScore}</span>
-                                            <span className="lbl-v1">SAFETY SCORE</span>
+                                        <div className="score-info-risk">
+                                            <span className="val-risk">{averageScore}</span>
+                                            <span className="lbl-risk">SAFETY SCORE</span>
                                         </div>
                                     </div>
-                                    <div className="score-desc-v1">
+                                    <div className="score-desc-risk">
                                         <Badge color={grade.color} variant="subtle"
                                                className="mb-12">{grade.text}</Badge>
                                         {resultData.disasterData?.data[0]?.disasterData?.length === 0 ? (
@@ -127,10 +127,10 @@ const RiskReport = () => {
                                             </div>
                                         ))}
                                         <p></p>
-                                        <div className="mini-stats-v1">
+                                        <div className="mini-stats-risk">
                                             <SmallProg label="재해" val={resultData.disasterData.data[0].score}
                                                        color="blue"/>
-                                            <SmallProg label="건축물" val={resultData.buildingData.data[0].finalScore}
+                                            <SmallProg label="건축물" val={resultData.buildingData.data[0].score}
                                                        color="yellow"/>
                                             <SmallProg label="등기" val={resultData.ocrData.data[0].score} color="green"/>
                                         </div>
@@ -138,44 +138,44 @@ const RiskReport = () => {
                                 </div>
                             </Card>
 
-                            <div className="details-grid-v1">
-                                <Card className="detail-item-v1" padding="24px">
+                            <div className="details-grid-risk">
+                                <Card className="detail-item-risk" padding="24px">
                                     <h4>등기부 권리 분석</h4>
-                                    <div className="info-row-v1"><span>소유주 확인</span><Badge color="green">000
+                                    <div className="info-row-risk"><span>소유주 확인</span><Badge color="green">000
                                         (일치)</Badge></div>
                                     <div className="mt-20">
-                                        <div className="info-row-v1"><span>부채 비율</span><span>0 KRW</span></div>
-                                        <div className="progress-bar-v1">
-                                            <div className="fill-v1 green" style={{width: '2%'}}></div>
+                                        <div className="info-row-risk"><span>부채 비율</span><span>0 KRW</span></div>
+                                        <div className="progress-bar-risk">
+                                            <div className="fill-risk green" style={{width: '2%'}}></div>
                                         </div>
                                     </div>
                                 </Card>
 
-                                <Card className="detail-item-v1" padding="24px">
+                                <Card className="detail-item-risk" padding="24px">
                                     <h4>시장 가치 평가</h4>
-                                    <div className="price-v1">00.0억 <small>KRW</small></div>
-                                    <div className="info-row-v1"><span>전세가율</span><span
+                                    <div className="price-risk">{(resultData.buildingData.data[0].housePrice) / 100000000}억 <small>KRW</small></div>
+                                    <div className="info-row-risk"><span>전세가율</span><span
                                         className="text-yellow">00%</span></div>
-                                    <div className="progress-bar-v1 multi">
+                                    <div className="progress-bar-risk multi">
                                         <div className="segment safe" style={{width: '60%'}}></div>
                                         <div className="segment caution" style={{width: '18%'}}></div>
                                     </div>
                                 </Card>
 
-                                <Card className="detail-item-v1" padding="24px">
+                                <Card className="detail-item-risk" padding="24px">
                                     <h4>건물 상태 정보</h4>
-                                    <div className="mini-grid-v1">
-                                        <div className="info-box-v1"><span>건물 연식</span><strong>00년</strong></div>
-                                        <div className="info-box-v1"><span>총 세대수</span><strong>000세대</strong></div>
+                                    <div className="mini-grid-risk">
+                                        <div className="info-box-risk"><span>건물 연식</span><strong>00년</strong></div>
+                                        <div className="info-box-risk"><span>총 세대수</span><strong>000세대</strong></div>
                                     </div>
                                 </Card>
                             </div>
                         </div>
 
-                        <aside className="sidebar-v1">
-                            <Card padding="24px" className="sidebar-card-v1">
+                        <aside className="sidebar-risk">
+                            <Card padding="24px" className="sidebar-card-risk">
                                 <h3>위험 요약 리포트</h3>
-                                <div className="summary-list-v1">
+                                <div className="summary-list-risk">
                                     <Summary icon="verified" title="소유주 검증 완료" desc="신분증 일치" color="green"/>
                                     <Summary icon="security" title="보증 보험 가능" desc="HUG 조건 충족" color="green"/>
                                     <Summary icon="trending_up" title="시세 변동 경고" desc="최근 거래량 증가" color="yellow"/>
@@ -183,7 +183,7 @@ const RiskReport = () => {
                                 <Button variant="dark" fullWidth className="mt-20">상세 리포트 보기</Button>
                             </Card>
 
-                            <Card padding="24px" className="sidebar-pro-v1 dark-card">
+                            <Card padding="24px" className="sidebar-pro-risk dark-card">
                                 <Badge color="blue" variant="solid" className="mb-16">PRO TIP</Badge>
                                 <h4>대항력 확보 방법</h4>
                                 <p>전입신고와 확정일자는 이사 당일 반드시 완료해야 보증금을 지킬 수 있습니다.</p>
@@ -199,25 +199,25 @@ const RiskReport = () => {
 
 /* Internal Helpers */
 const Step = ({icon, label, active, current, disabled}) => (
-    <div className={`step-v1 ${active ? 'active' : ''} ${current ? 'current' : ''} ${disabled ? 'disabled' : ''}`}>
-        <div className="circle-v1"><span className="material-symbols-outlined">{icon}</span></div>
+    <div className={`step-risk ${active ? 'active' : ''} ${current ? 'current' : ''} ${disabled ? 'disabled' : ''}`}>
+        <div className="circle-risk"><span className="material-symbols-outlined">{icon}</span></div>
         <p dangerouslySetInnerHTML={{__html: label}}></p>
     </div>
 );
 
 const SmallProg = ({label, val, color}) => (
-    <div className="small-stat-v1">
-        <div className="lbl-row-v1"><span>{label}</span><strong className={`text-${color}`}>{val}%</strong></div>
-        <div className="bar-v1">
-            <div className={`fill-v1 ${color}`} style={{width: `${val}%`}}></div>
+    <div className="small-stat-risk">
+        <div className="lbl-row-risk"><span>{label}</span><strong className={`text-${color}`}>{val}%</strong></div>
+        <div className="bar-risk">
+            <div className={`fill-risk ${color}`} style={{width: `${val}%`}}></div>
         </div>
     </div>
 );
 
 const Summary = ({icon, title, desc, color}) => (
-    <div className={`summary-item-v1 ${color}`}>
-        <div className="icon-v1"><span className="material-symbols-outlined">{icon}</span></div>
-        <div className="txt-v1"><strong>{title}</strong><p>{desc}</p></div>
+    <div className={`summary-item-risk ${color}`}>
+        <div className="icon-risk"><span className="material-symbols-outlined">{icon}</span></div>
+        <div className="txt-risk"><strong>{title}</strong><p>{desc}</p></div>
     </div>
 );
 

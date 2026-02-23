@@ -8,20 +8,21 @@ import java.util.List;
 public record BuildingDTO(
         String bldNm,               // 건물명
         String platPlc,             // 대지위치
-        String rnum,                // 순번
         String mainPurpsCdNm,       // 주용도코드명
         String etcPurps,            // 기타용도
-        int grndFlrCnt,             // 지상층수
-        int ugrndFlrCnt,            // 지하층수
+        Integer hsprc,              // 주택가격
         String indictViolBldYn,     // 위반건축물 여부 (0: 정상, 1: 위반)
         String strctCdNm,           // 구조명
-        String rtitnMainPurpsCdNm   // 지붕구조명
+        Integer crtnDay             // 생성일자
 ) {
+
     public record BuildingResponse(
             String address,
-            int finalScore,
-            String riskLevel,           // 등급
-            List<String> riskFactors    // 감점 사유
+            Integer housePrice,
+            Integer score,
+            String riskLevel,       // 등급
+            List<String> reasons,   // 감점 사유
+            Integer creationDay         // 생성일자
     ) {
         public static String calculateBuildingLevel(int score) {
             if (score >= 95) return "안전";

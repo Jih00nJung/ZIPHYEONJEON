@@ -18,14 +18,14 @@ public class ApiDisaster {
 
     public String fetchAllDisasterData(String rgnNm) {
 
-        String BASE_URL = "https://www.safetydata.go.kr/V2/api/DSSP-IF-00247";
+        String END_POINT = "https://www.safetydata.go.kr/V2/api/DSSP-IF-00247";
 
-        String url = BASE_URL + "?serviceKey=" + serviceKey
+        String url = END_POINT + "?serviceKey=" + serviceKey
                 + "&rgnNm=" + rgnNm
                 + "&numOfRows=1000&pageNo=1&returnType=json";
 
         try {
-            System.out.println("ApiDisaster...");
+            System.out.println("ApiDisaster..." + url);
             return restTemplate.getForObject(url, String.class);
         } catch (Exception e) {
             return "{\"error\": \"ApiDisaster 실패: " + e.getMessage() + "\"}";

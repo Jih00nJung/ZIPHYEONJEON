@@ -58,6 +58,11 @@ const RiskAnalysis = () => {
 
     // 제출 검증
     const isInvalid = !address.trim() || !file || !isSearched || !agreements.terms;
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    if (loading) return <div>분석 중입니다...</div>;
+    if (error) return <div>{error}</div>;
 
     // 제출
     const handleSubmit = async (e) => {
@@ -101,6 +106,7 @@ const RiskAnalysis = () => {
 
         try {
             console.log(`${address}에 대한 데이터 요청...`);
+            setLoading(true);
             const responses = await Promise.all(requests);
 
             const analysisResult = {
@@ -119,7 +125,9 @@ const RiskAnalysis = () => {
 
         } catch (error) {
             console.error("데이터 요청 실패:", error.response?.data || error.message);
-            alert("분석 과정 중 오류가 발생했습니다. 다시 시도해 주세요.");
+            setError("종합 분석 중 오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
         }
     };
 

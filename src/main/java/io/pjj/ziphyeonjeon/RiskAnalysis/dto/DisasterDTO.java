@@ -14,10 +14,10 @@ public record DisasterDTO(
 ) {
     public record DisasterResponse(
             String address,
-            int score,
+            Integer score,
             List<DisasterDTO> disasterData
     ) {
-        public static String calculateDisasterLevel(int score) {
+        public static String calculateDisasterLevel(Integer score) {
             if (score >= 90) return "안전";
             if (score >= 70) return "주의";
             return "위험";

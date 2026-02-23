@@ -1,25 +1,23 @@
 package io.pjj.ziphyeonjeon;
 
-import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
-import io.pjj.ziphyeonjeon.global.config.AddressCodeMap;
-import org.junit.jupiter.api.Assertions;
+import io.pjj.ziphyeonjeon.global.API.ApiLoan;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Map;
 
 class ApplicationTests {
 
     @Test
     void apiTest() {
         RestTemplate restTemplate = new RestTemplate();
-        ApiDisaster apiDisaster = new ApiDisaster(restTemplate);
+        ApiLoan apiLoan = new ApiLoan(restTemplate);
 
-        String serviceKey = "8Z1X40MD48205H28";
-        ReflectionTestUtils.setField(apiDisaster, "serviceKey", serviceKey);
+        String serviceKey = "5R1W25iameoAVaGDMFaP03PhY4t3LTsoLrt00XESCDquGBzGjfq7YD%2F7LIbb1o0V0km%2FwLqK5pluQch%2BwaiEAQ%3D%3D";
+        ReflectionTestUtils.setField(apiLoan, "serviceKey", serviceKey);
 
-        String region = "서울특별시";
-        String result = apiDisaster.fetchAllDisasterData(region);
+        Map<String, String> result = apiLoan.fetchAllLoanData();
 
         // 4. 결과 출력
         System.out.println("================ API RAW RESPONSE ================");

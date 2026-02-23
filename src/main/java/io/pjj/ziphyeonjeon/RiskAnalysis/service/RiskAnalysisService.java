@@ -36,7 +36,7 @@ public class RiskAnalysisService {
 
         return new RiskDTO<>(
                 "success",
-                "/RiskAnalysisService/analyzeDisasterRisk" + address,
+                "/RiskAnalysisService/Disaster, 주소: " + address,
                 List.of(responseContent)
         );
     }
@@ -56,17 +56,22 @@ public class RiskAnalysisService {
 
     // 건축물대장 위험도 분석
     public RiskDTO<BuildingDTO.BuildingResponse> analyzeBuildingRisk(String address) {
-        List<BuildingDTO> titles = riskApiService.requestBuildingApi(address);
+        List<BuildingDTO> buildingData = riskApiService.requestBuildingApi(address);
+
+        int housePrice = buildingData.isEmpty() ? 0 : buildingData.getLast().hsprc();
+        int creationDay = buildingData.isEmpty() ? 0 : buildingData.getLast().crtnDay();
 
         List<String> reasons = new ArrayList<>();
-        int score = calculateBuildingScore(titles, reasons);
+        int score = calculateBuildingScore(buildingData, reasons);
 
-        return new RiskDTO<>("success", "/RiskAnalysisService/Building" + address,
+        return new RiskDTO<>("success", "/RiskAnalysisService/Building, 주소: " + address,
                 List.of(new BuildingDTO.BuildingResponse(
                         address,
+                        housePrice,
                         score,
                         BuildingDTO.BuildingResponse.calculateBuildingLevel(score),
-                        reasons
+                        reasons,
+                        creationDay
                 ))
         );
     }

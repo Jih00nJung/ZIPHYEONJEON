@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import static reactor.netty.http.HttpConnectionLiveness.log;
 
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.BuildingDTO;
 import io.pjj.ziphyeonjeon.RiskAnalysis.dto.DisasterDTO;
+
 import io.pjj.ziphyeonjeon.global.API.ApiBuilding;
 import io.pjj.ziphyeonjeon.global.API.ApiDisaster;
 
@@ -36,7 +38,7 @@ public class RiskApiService {
         String district = addrDetails.get("district");
 
         String rawData = apiDisaster.fetchAllDisasterData(district);
-        List<DisasterDTO> disasterList = extractApiData(rawData, DisasterDTO.class, "body");
+        List<DisasterDTO> disasterList = extractApiData(rawData, DisasterDTO.class);
 
         return filterDisasterData(disasterList);
     }
@@ -59,7 +61,18 @@ public class RiskApiService {
                 codes[0], codes[1], addrDetails.get("bun"), addrDetails.get("ji")
         );
 
-        return extractApiData(apiRawData.get("title"), BuildingDTO.class, "response", "body", "items", "item");
+        List<BuildingDTO> operationList = new ArrayList<>();
+
+        String[] targetOperations = {"title", "hsprc"};
+
+        for (String key : targetOperations) {
+            List<BuildingDTO> data = extractApiData(
+                    apiRawData.get(key), BuildingDTO.class, "response", "body", "items", "item"
+            );
+            operationList.addAll(data);
+        }
+
+        return operationList;
     }
 
     // JsonNode
@@ -78,7 +91,10 @@ public class RiskApiService {
         try {
             JsonNode node = moveJsonPath(jsonString, paths);
 
-            if (node.isMissingNode() || node.isNull()) return Collections.emptyList();
+            if (node.isMissingNode() || node.isNull()) {
+                log.warn("해당 경로를 찾을 수 없습니다: {}", String.join(" > ", paths));
+                return Collections.emptyList();
+            }
 
             if (node.isArray()) {
                 return objectMapper.convertValue(node,

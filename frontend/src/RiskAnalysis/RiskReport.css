@@ -1,25 +1,25 @@
 /* RiskReport.css - Refactored for Common Components */
 
-.risk-report-page-v1 {
+.risk-report-page-risk {
     background-color: var(--slate-50);
     min-height: calc(100vh - 80px);
     padding: 40px 0;
 }
 
-.dashboard-container-v1 {
+.dashboard-container-risk {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px;
 }
 
 /* Process Steps */
-.process-section-v1 {
+.process-section-risk {
     margin-bottom: 40px;
     position: relative;
     padding: 0 40px;
 }
 
-.progress-track-v1 {
+.progress-track-risk {
     height: 4px;
     background: var(--slate-100);
     border-radius: 2px;
@@ -30,20 +30,20 @@
     z-index: 1;
 }
 
-.progress-fill-v1 {
+.progress-fill-risk {
     height: 100%;
     background: var(--primary);
     border-radius: 2px;
 }
 
-.steps-container-v1 {
+.steps-container-risk {
     display: flex;
     justify-content: space-between;
     position: relative;
     z-index: 2;
 }
 
-.step-v1 {
+.step-risk {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -51,7 +51,7 @@
     text-align: center;
 }
 
-.circle-v1 {
+.circle-risk {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -63,61 +63,61 @@
     color: var(--slate-400);
 }
 
-.step-v1.active .circle-v1 {
+.step-risk.active .circle-risk {
     background: var(--primary);
     border-color: var(--primary);
     color: white;
 }
 
-.step-v1.current .circle-v1 {
+.step-risk.current .circle-risk {
     border-color: var(--primary);
     color: var(--primary);
     box-shadow: 0 0 0 4px var(--primary-light);
 }
 
-.step-v1 p {
+.step-risk p {
     font-size: 11px;
     font-weight: 800;
     color: var(--slate-400);
     line-height: 1.4;
 }
 
-.step-v1.active p,
-.step-v1.current p {
+.step-risk.active p,
+.step-risk.current p {
     color: var(--slate-800);
 }
 
-.layout-grid-v1 {
+.layout-grid-risk {
     display: grid;
     grid-template-columns: 1fr 340px;
     gap: 32px;
 }
 
-.main-content-v1 {
+.main-content-risk {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
 /* Safety Card Custom */
-.safety-flex-v1 {
+.safety-flex-risk {
     display: flex;
     align-items: center;
     gap: 40px;
 }
 
-.score-circle-v1 {
+.score-circle-risk {
     position: relative;
     width: 140px;
     height: 140px;
     flex-shrink: 0;
 }
 
-.score-circle-v1 svg {
+.score-circle-risk svg {
     transform: rotate(-90deg);
 }
 
-.score-info-v1 {
+.score-info-risk {
     position: absolute;
     top: 0;
     left: 0;
@@ -129,39 +129,39 @@
     justify-content: center;
 }
 
-.score-info-v1 .val-v1 {
+.score-info-risk .val-risk {
     font-size: 42px;
     font-weight: 900;
     color: var(--slate-900);
 }
 
-.score-info-v1 .lbl-v1 {
+.score-info-risk .lbl-risk {
     font-size: 10px;
     font-weight: 800;
     color: var(--slate-400);
     letter-spacing: 0.05em;
 }
 
-.score-desc-v1 h2 {
+.score-desc-risk h2 {
     font-size: 24px;
     font-weight: 800;
     margin: 0 0 8px 0;
 }
 
-.score-desc-v1 p {
+.score-desc-risk p {
     font-size: 15px;
     color: var(--slate-500);
     line-height: 1.6;
     margin-bottom: 24px;
 }
 
-.mini-stats-v1 {
+.mini-stats-risk {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.small-stat-v1 .lbl-row-v1 {
+.small-stat-risk .lbl-row-risk {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
@@ -169,45 +169,45 @@
     margin-bottom: 6px;
 }
 
-.bar-v1 {
+.bar-risk {
     height: 6px;
     background: var(--slate-100);
     border-radius: 3px;
     overflow: hidden;
 }
 
-.fill-v1 {
+.fill-risk {
     height: 100%;
     border-radius: 3px;
 }
 
-.fill-v1.blue {
+.fill-risk.blue {
     background: var(--primary);
 }
 
-.fill-v1.green {
+.fill-risk.green {
     background: #34D399;
 }
 
-.fill-v1.yellow {
+.fill-risk.yellow {
     background: #FBBF24;
 }
 
 /* Details Grid */
-.details-grid-v1 {
+.details-grid-risk {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
 }
 
-.detail-item-v1 h4 {
+.detail-item-risk h4 {
     font-size: 15px;
     font-weight: 800;
     margin: 0 0 16px 0;
     color: var(--slate-800);
 }
 
-.info-row-v1 {
+.info-row-risk {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -217,7 +217,7 @@
     color: var(--slate-600);
 }
 
-.progress-bar-v1 {
+.progress-bar-risk {
     height: 8px;
     background: var(--slate-100);
     border-radius: 4px;
@@ -226,34 +226,34 @@
     display: flex;
 }
 
-.progress-bar-v1 .segment.safe {
+.progress-bar-risk .segment.safe {
     background: #34D399;
 }
 
-.progress-bar-v1 .segment.caution {
+.progress-bar-risk .segment.caution {
     background: #FBBF24;
 }
 
-.price-v1 {
+.price-risk {
     font-size: 24px;
     font-weight: 900;
     color: var(--slate-900);
     margin-bottom: 12px;
 }
 
-.price-v1 small {
+.price-risk small {
     font-size: 14px;
     font-weight: 700;
     color: var(--slate-400);
 }
 
-.mini-grid-v1 {
+.mini-grid-risk {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-.info-box-v1 {
+.info-box-risk {
     background: var(--slate-50);
     padding: 12px;
     border-radius: 12px;
@@ -262,43 +262,43 @@
     gap: 4px;
 }
 
-.info-box-v1 span {
+.info-box-risk span {
     font-size: 11px;
     color: var(--slate-400);
     font-weight: 700;
 }
 
-.info-box-v1 strong {
+.info-box-risk strong {
     font-size: 15px;
     color: var(--slate-800);
     font-weight: 800;
 }
 
 /* Sidebar */
-.sidebar-v1 {
+.sidebar-risk {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.sidebar-card-v1 h3 {
+.sidebar-card-risk h3 {
     font-size: 18px;
     font-weight: 800;
     margin: 0 0 20px 0;
 }
 
-.summary-list-v1 {
+.summary-list-risk {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.summary-item-v1 {
+.summary-item-risk {
     display: flex;
     gap: 12px;
 }
 
-.summary-item-v1 .icon-v1 {
+.summary-item-risk .icon-risk {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -308,23 +308,23 @@
     flex-shrink: 0;
 }
 
-.summary-item-v1.green .icon-v1 {
+.summary-item-risk.green .icon-risk {
     background: #ECFDF5;
     color: #059669;
 }
 
-.summary-item-v1.yellow .icon-v1 {
+.summary-item-risk.yellow .icon-risk {
     background: #FFFBEB;
     color: #D97706;
 }
 
-.summary-item-v1 strong {
+.summary-item-risk strong {
     font-size: 14px;
     font-weight: 800;
     color: var(--slate-800);
 }
 
-.summary-item-v1 p {
+.summary-item-risk p {
     font-size: 12px;
     color: var(--slate-500);
     margin: 2px 0 0 0;
@@ -371,11 +371,11 @@
 }
 
 @media (max-width: 1024px) {
-    .layout-grid-v1 {
+    .layout-grid-risk {
         grid-template-columns: 1fr;
     }
 
-    .details-grid-v1 {
+    .details-grid-risk {
         grid-template-columns: 1fr;
     }
 }

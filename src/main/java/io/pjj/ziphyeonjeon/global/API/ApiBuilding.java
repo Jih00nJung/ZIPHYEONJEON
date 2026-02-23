@@ -12,7 +12,7 @@ import java.util.Map;
 @Component
 public class ApiBuilding {
 
-    @Value("${BUILDING_SERVICE_KEY}")
+    @Value("${PUBLIC_DATA_SERVICE_KEY}")
     private String serviceKey;
 
     private final RestTemplate restTemplate;
@@ -27,26 +27,25 @@ public class ApiBuilding {
 
         Map<String, String> results = new HashMap<>();
 
-        String BASE_URL = "https://apis.data.go.kr/1613000/BldRgstHubService";
+        String END_POINT = "https://apis.data.go.kr/1613000/BldRgstHubService";
 
         Map<String, String> operations = new HashMap<>();
         operations.put("title", "/getBrTitleInfo");     // 표제부 조회
-        operations.put("jijigu", "/getBrJijiguInfo");   // 지역지구구역 조회
-        operations.put("expos", "/getBrExposInfo");     // 전유부 조회
+        operations.put("hsprc", "/getBrHsprcInfo");     // 주택가격 조회
 
         operations.forEach((key, operation) -> {
             try {
-                String urlString = BASE_URL + operation
+                String urlString = END_POINT + operation
                         + "?serviceKey=" + serviceKey
                         + "&sigunguCd=" + sigunguCd
                         + "&bjdongCd=" + bjdongCd
                         + "&bun" + bun
                         + "&ji" + ji
-                        + "&platGbCd=0&numOfRows=10&pageNo=1&_type=json";
+                        + "&platGbCd=0&numOfRows=2&pageNo=1&_type=json";
 
                 URI uri = new URI(urlString);
 
-                System.out.println(key + " ApiBuilding...");
+                System.out.println(key + " ApiBuilding..." + uri);
 
                 String response = restTemplate.getForObject(uri, String.class);
                 results.put(key, response);
