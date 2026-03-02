@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './RiskAnalysis.css';
 
@@ -10,7 +10,7 @@ import {
     IoCheckmark,
     IoArrowForwardOutline
 } from "react-icons/io5";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const RiskAnalysis = () => {
     const navigate = useNavigate();
@@ -34,7 +34,7 @@ const RiskAnalysis = () => {
     // UUID 생성 (중복 방지)
     const generateUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            var r = (Math.random() * 16) | 0, v = c === 'x' ? r : ((r & 0x3) | 0x8);
             return v.toString(16);
         });
     };
@@ -53,7 +53,7 @@ const RiskAnalysis = () => {
 
     // 약관 동의 ConsentItem key
     const handleToggle = (key) => {
-        setAgreements(prev => ({...prev, [key]: !prev[key]}));
+        setAgreements(prev => ({ ...prev, [key]: !prev[key] }));
     };
 
     // 제출 검증
@@ -141,12 +141,12 @@ const RiskAnalysis = () => {
                     <section className="main-section">
                         <div className="main-bg-blur"></div>
                         <span className="badge">
-                        <IoShieldCheckmarkOutline size={14}/> 안심 분석
+                            <IoShieldCheckmarkOutline size={14} /> 안심 분석
                         </span>
                         <h2 className="title">종합 위험도 분석하기</h2>
                         <p className="description">
-                            부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br/>
-                            집현전이 법적 및 시세 위험을 분석해 드립니다. <br/>
+                            부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br />
+                            집현전이 법적 및 시세 위험을 분석해 드립니다. <br />
                             예제 주소: 서울특별시 종로구 경운동 64-17
                         </p>
                     </section>
@@ -168,7 +168,7 @@ const RiskAnalysis = () => {
                                         <span className="helper-text-link">지도 열기</span>
                                     </div>
                                     <div className="search-input-wrapper">
-                                        <IoSearchOutline className="search-icon"/>
+                                        <IoSearchOutline className="search-icon" />
                                         <input
                                             type="text"
                                             placeholder="지번주소를 입력하세요. 예) 서울특별시 용산구 한강대로 405"
@@ -183,7 +183,7 @@ const RiskAnalysis = () => {
                                     </div>
                                 </div>
 
-                                <hr className="form-divider"/>
+                                <hr className="form-divider" />
 
                                 {/* 등기부등본 업로드 */}
                                 <div className="form-step">
@@ -194,8 +194,8 @@ const RiskAnalysis = () => {
                                         </label>
                                         <div className="tooltip-container">
                                             <span className="tooltip-trigger"
-                                                  onMouseEnter={handleMouseEnter}
-                                                  onMouseLeave={handleMouseLeave}>등기부등본은 왜요?</span>
+                                                onMouseEnter={handleMouseEnter}
+                                                onMouseLeave={handleMouseLeave}>등기부등본은 왜요?</span>
 
                                             {isTooltipVisible && (
                                                 <div className="tooltip-box">
@@ -206,10 +206,10 @@ const RiskAnalysis = () => {
 
                                     </div>
                                     <div className="upload-box">
-                                        <input type="file" className="file-input" onChange={handleFileChange}/>
+                                        <input type="file" className="file-input" onChange={handleFileChange} />
                                         <div className="upload-content">
                                             <div className="upload-icon-circle">
-                                                <IoCloudUploadOutline size={30}/>
+                                                <IoCloudUploadOutline size={30} />
                                             </div>
                                             <h3>{file ? `선택된 파일: ${file.name}` : "업로드하려면 클릭하거나 파일을 끌어오세요."}</h3>
                                             <p>PDF, JPG, PNG 파일 (10MB 이하)</p>
@@ -218,7 +218,7 @@ const RiskAnalysis = () => {
                                     </div>
                                 </div>
 
-                                <hr className="form-divider"/>
+                                <hr className="form-divider" />
 
                                 {/* 3: 약관 동의 */}
                                 <div className="form-step">
@@ -229,7 +229,7 @@ const RiskAnalysis = () => {
                                         <ConsentItem
                                             title="분석 결과 활용 시 주의사항"
                                             desc={<>
-                                                분석 결과는 과거 데이터를 바탕으로 구성되었습니다.<br/>
+                                                분석 결과는 과거 데이터를 바탕으로 구성되었습니다.<br />
                                                 실제 매물 상태와 차이가 있을 수 있으므로, 의사 결정의 보조 수단으로만 사용하시길 권장합니다.
                                             </>}
                                             essential={true}
@@ -256,21 +256,21 @@ const RiskAnalysis = () => {
                                 <div className="submit-section">
                                     {isInvalid && (
                                         <div className="validation-message">
-                                        <span>
-                                            필수 항목과 주소, 등기부등본을 확인해 주세요.
-                                        </span>
+                                            <span>
+                                                필수 항목과 주소, 등기부등본을 확인해 주세요.
+                                            </span>
                                         </div>
                                     )}
 
                                     <button type="button" className={`submit-btn ${isInvalid ? 'disabled' : ''}`}
-                                            disabled={isInvalid} onClick={handleSubmit}>
+                                        disabled={isInvalid} onClick={handleSubmit}>
                                         <span>위험 분석 시작하기</span>
-                                        <IoArrowForwardOutline size={20}/>
+                                        <IoArrowForwardOutline size={20} />
                                     </button>
 
                                     <p className="terms-text">
 
-                                        시작하기를 클릭하면 <a href="#">서비스 약관</a>에 동의하게 됩니다.
+                                        시작하기를 클릭하면 <span style={{ cursor: 'pointer', textDecoration: 'underline', color: 'blue' }}>서비스 약관</span>에 동의하게 됩니다.
                                     </p>
                                 </div>
                             </form>
@@ -284,7 +284,7 @@ const RiskAnalysis = () => {
     );
 };
 
-const ConsentItem = ({title, desc, essential, checked, onChange}) => (
+const ConsentItem = ({ title, desc, essential, checked, onChange }) => (
     <label className="consent-item">
         <div className="checkbox-wrapper">
             <input
@@ -292,25 +292,18 @@ const ConsentItem = ({title, desc, essential, checked, onChange}) => (
                 checked={checked}
                 onChange={onChange}
             />
-            <span className="custom-checkbox"><IoCheckmark/></span>
+            <span className="custom-checkbox"><IoCheckmark /></span>
         </div>
         <div className="consent-text">
             <div className="consent-header">
                 <p className="consent-title">{title}</p>
                 <span className={`tag-${essential ? 'essential' : 'optional'}`}>
-          {essential ? '필수' : '선택'}
-        </span>
+                    {essential ? '필수' : '선택'}
+                </span>
             </div>
             <p className="consent-desc">{desc}</p>
         </div>
     </label>
-);
-
-const FeatureItem = ({icon, text, color}) => (
-    <div className="feature-item">
-        <div className={`feature-icon icon-${color}`}>{icon}</div>
-        <span>{text}</span>
-    </div>
 );
 
 export default RiskAnalysis;
