@@ -217,11 +217,13 @@ const SmallProg = ({ label, val, color }) => (
     </div>
 );
 
+/*
 const Summary = ({ icon, title, desc, color }) => (
     <div className={`summary-item-risk ${color}`}>
         <div className="icon-risk"><span className="material-symbols-outlined">{icon}</span></div>
         <div className="txt-risk"><strong>{title}</strong><p>{desc}</p></div>
     </div>
 );
+*/
 
 export default RiskReport;

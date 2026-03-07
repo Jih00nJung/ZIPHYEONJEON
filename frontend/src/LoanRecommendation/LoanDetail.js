@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import './LoanDetail.css';
 import MainLayout from "../layouts/MainLayout";
 import Badge from '../components/common/Badge';

@@ -6,7 +6,7 @@ import Hero from '../components/common/Hero';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Loan = () => {
 
