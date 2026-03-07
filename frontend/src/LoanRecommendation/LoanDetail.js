@@ -29,7 +29,7 @@ const LoanDetail = () => {
                 <header className="ld-header-LoanDetail">
                     <Link
                         to={`/loan/list`}
-                        state={{ prevFilters: location.state?.prevFilters }}
+                        state={{prevFilters: location.state?.prevFilters}}
                         style={{textDecoration: 'none'}}
                     >
                         <button className="ld-back-btn-LoanDetail">
@@ -128,6 +128,7 @@ const LoanDetail = () => {
 
                     {/* 오른쪽 사이드바 섹션 */}
                     <aside className="ld-sidebar-LoanDetail">
+                        {/*
                         <div className="ld-blue-card-LoanDetail">
                             <h4>나의 적합도 확인</h4>
                             <p className="ld-blue-card-desc-LoanDetail">몇 가지 질문을 통해 적합 여부를 바로 확인해 보세요.</p>
@@ -159,6 +160,7 @@ const LoanDetail = () => {
                             </div>
                             <button className="ld-dark-btn-LoanDetail">신청하러 가기</button>
                         </div>
+                        */}
                     </aside>
                 </div>
             </div>

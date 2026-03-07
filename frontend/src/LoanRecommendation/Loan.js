@@ -21,8 +21,11 @@ const Loan = () => {
         }, []);
 
         const fetchLoans = async () => {
+
+            const API_BASE_URL = process.env.REACT_APP_API_URL;
+
             try {
-                const response = await axios.get('http://localhost:8080/api/loan/list');
+                const response = await axios.get(`${API_BASE_URL}/api/loan/list`);
                 console.log(response.data);
 
                 const {govLoans, bankLoans} = response.data;
@@ -35,6 +38,14 @@ const Loan = () => {
             } finally {
                 setLoading(false);
             }
+        };
+
+        const bankLogoMap = {
+            "IBK기업은행": "ibk",
+            "우리은행": "woori",
+            "신협": "sh",
+            "BNK경남은행": "bnk",
+            "부림저축은행": "bulim"
         };
 
         return (
@@ -129,18 +140,26 @@ const Loan = () => {
                                                     <tr key={loan.snq}>
                                                         <td className="bank-info-loan">
                                                             <div
-                                                                className={`bank-logo-loan`}>{loan.logo}</div>
+                                                                className={`bank-logo-loan`}><img
+                                                                src={`/img/bankLogo/${bankLogoMap[loan.ofrInstNm] || 'default'}.png`}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    objectFit: 'contain'
+                                                                }}></img></div>
                                                             <span className="bank-name-loan">{loan.ofrInstNm}</span>
                                                         </td>
                                                         <td>{loan.finPrdNm.length > 13 ? loan.finPrdNm.substring(0, 13) + "..." : loan.finPrdNm}</td>
                                                         <td className="rate-td-loan">{loan.irt}</td>
                                                         <td>{loan.lnLmt}</td>
-                                                        <Link to={`/loan/detail/${loan.snq}`}
-                                                              style={{textDecoration: 'none'}}>
-                                                            <td><span
-                                                                className="material-symbols-outlined">chevron_right</span>
-                                                            </td>
-                                                        </Link>
+                                                        <td>
+                                                            <Link to={`/loan/detail/${loan.snq}`}
+                                                                  style={{textDecoration: 'none'}}>
+                                                                <span
+                                                                    className="material-symbols-outlined">chevron_right</span>
+                                                            </Link>
+                                                        </td>
+
                                                     </tr>
                                                 ))}
                                                 </tbody>
@@ -163,6 +182,7 @@ const Loan = () => {
                             </div>
 
                             <aside className="sidebar-loan">
+                                {/*
                                 <Card className="sidebar-item-loan" padding="24px">
                                     <div className="sidebar-header-loan">
                                         <span className="material-symbols-outlined icon-blue">analytics</span>
@@ -185,13 +205,14 @@ const Loan = () => {
                                         </div>
                                     </div>
                                 </Card>
+                                */}
 
                                 <Card className="sidebar-tip-loan" padding="24px">
                                     <Badge color="blue" variant="solid" className="mb-12">PRO TIP</Badge>
                                     <h4>대출 승인 확률을 높이는 법</h4>
                                     <p>전세 보증 보험 가입이 가능한 매물을 선택하면 대출 금리 우대 혜택을 받을 수 있습니다.</p>
-                                    <Button variant="ghost" icon="arrow_forward" className="p-0 text-blue">분석 리포트
-                                        확인</Button>
+                                    {/*<Button variant="ghost" icon="arrow_forward" className="p-0 text-blue">분석 리포트*/}
+                                    {/*    확인</Button>*/}
                                 </Card>
                             </aside>
                         </div>

@@ -71,6 +71,8 @@ const RiskAnalysis = () => {
 
                 if (isInvalid) return alert("필수 항목과 주소, 등기부등본을 확인해 주세요.");
 
+                const API_BASE_URL = process.env.REACT_APP_API_URL;
+
                 try {
                     setLoading(true);
                     const commonRequestId = generateUUID();
@@ -82,7 +84,7 @@ const RiskAnalysis = () => {
                     if (agreements.disaster) {
                         requestNames.push('disaster');
                         console.log("RiskAnalysis.js 재해:", address);
-                        requestPromises.push(axios.get(`http://localhost:8080/api/risk/disaster/${address}`));
+                        requestPromises.push(axios.get(`${API_BASE_URL}/api/risk/disaster/${address}`));
 
                     }
 
@@ -92,7 +94,7 @@ const RiskAnalysis = () => {
                     if (agreements.building) {
                         requestNames.push('building');
                         console.log("RiskAnalysis.js 건축물대장:", fullAddress);
-                        requestPromises.push(axios.get(`http://localhost:8080/api/risk/building/${fullAddress}`));
+                        requestPromises.push(axios.get(`${API_BASE_URL}/api/risk/building/${fullAddress}`));
                     }
 
                     // 필수 - 파일 업로드
@@ -103,7 +105,7 @@ const RiskAnalysis = () => {
                     backFormData.append('file', file);
 
                     console.log("RiskAnalysis.js 파일 업로드:", commonRequestId);
-                    requestPromises.push(axios.post('http://localhost:8080/api/risk/upload', backFormData));
+                    requestPromises.push(axios.post(`${API_BASE_URL}/api/risk/upload`, backFormData));
 
                     // 필수 - 등기부등본 OCR
                     requestNames.push('ocr');
@@ -123,7 +125,7 @@ const RiskAnalysis = () => {
                     ocrFormData.append('message', JSON.stringify(message));
                     ocrFormData.append('file', file);
                     console.log("RiskAnalysis.js 등기부등본 OCR:", file);
-                    requestPromises.push(axios.post('http://localhost:8080/api/risk/ocr', ocrFormData));
+                    requestPromises.push(axios.post(`${API_BASE_URL}/api/risk/ocr`, ocrFormData));
 
                     // 분석 데이터 저장
                     requestNames.push('analysis');
@@ -133,7 +135,7 @@ const RiskAnalysis = () => {
                     analysisFormData.append('file', file);
 
                     console.log("RiskAnalysis.js 분석 저장:", address);
-                    requestPromises.push(axios.post(`http://localhost:8080/api/risk/analysis/save`, analysisFormData, {
+                    requestPromises.push(axios.post(`${API_BASE_URL}/api/risk/analysis/save`, analysisFormData, {
                             headers: {
                                 'Content-Type': 'multipart/form-data'
                             }
@@ -190,7 +192,9 @@ const RiskAnalysis = () => {
                             <p className="risk-description">
                                 부동산 정보를 입력하고 등기부등본을 업로드해 주세요. <br/>
                                 집현전이 법적 및 시세 위험을 분석해 드립니다. <br/>
-                                예제 주소: 서울특별시 강서구 내발산동 742 114동
+                                <br/>
+                                서울특별시 동작구 신대방동 691-3 102호<br/>
+                                서울특별시 금천구 독산동 150-10
                             </p>
                         </section>
 
@@ -207,7 +211,8 @@ const RiskAnalysis = () => {
                                                 <span className="risk-step-num">1</span> 재해, 건축물대장 위험 분석
                                                 <span className="risk-tag-required">필수</span>
                                             </label>
-                                            <span className="risk-helper-text-link">지도 열기</span>
+                                            {/* 지도 연결 필요 검색창 주소 받아서 그에 해당하는 위치를 중심으로 지도 팝업
+                                            <span className="risk-helper-text-link">지도 열기</span>*/}
                                         </div>
                                         {/* 지번 주소 (메인 검색) */}
                                         <div className="risk-search-input-wrapper">
@@ -227,8 +232,7 @@ const RiskAnalysis = () => {
 
                                         {/* 상세 주소 (서브 입력) */}
                                         <div className="risk-detail-input-wrapper">
-                                            <IoSearchOutline className="risk-detail-icon"
-                                                             style={{transform: 'scaleX(-1)'}}/>
+                                            <IoSearchOutline className="risk-detail-icon"/>
                                             <input
                                                 type="text"
                                                 placeholder="상세주소를 입력하세요. 예) 101동 102호"
@@ -250,11 +254,12 @@ const RiskAnalysis = () => {
                                             <div className="risk-tooltip-container">
                                             <span className="risk-tooltip-trigger"
                                                   onMouseEnter={handleMouseEnter}
-                                                  onMouseLeave={handleMouseLeave}>등기부등본은 왜요?</span>
+                                                  onMouseLeave={handleMouseLeave}>등기부등본?</span>
 
                                                 {isTooltipVisible && (
                                                     <div className="risk-tooltip-box">
-                                                        권리 분석을 위해 필요한 서류입니다.
+                                                        권리 분석을 위해 필요한 서류입니다.<br/>
+                                                        분석 목적으로만 활용되며, 데이터를 저장하지 않습니다.
                                                     </div>
                                                 )}
                                             </div>
@@ -266,7 +271,7 @@ const RiskAnalysis = () => {
                                                 <div className="risk-upload-icon-circle">
                                                     <IoCloudUploadOutline size={30}/>
                                                 </div>
-                                                <h3>{file ? `선택된 파일: ${file.name}` : "업로드하려면 클릭하거나 파일을 끌어오세요."}</h3>
+                                                <h3>{file ? `선택된 파일: ${file.name}` : "파일을 선택해 주세요"}</h3>
                                                 <p>PDF, JPG, PNG 파일 (10MB 이하)</p>
                                                 <div className="risk-select-btn">파일 선택</div>
                                             </div>
@@ -361,13 +366,6 @@ const ConsentItem = ({title, desc, essential, checked, onChange}) => (
             <p className="risk-consent-desc">{desc}</p>
         </div>
     </label>
-);
-
-const FeatureItem = ({icon, text, color}) => (
-    <div className="risk-feature-item">
-        <div className={`risk-feature-icon risk-icon-${color}`}>{icon}</div>
-        <span>{text}</span>
-    </div>
 );
 
 export default RiskAnalysis;
