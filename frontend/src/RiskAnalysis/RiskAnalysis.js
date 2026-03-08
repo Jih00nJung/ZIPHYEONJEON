@@ -151,8 +151,7 @@ const RiskAnalysis = () => {
                     const responses = await Promise.all(requestPromises);
                     console.log(`${address}에 대한 데이터 요청...`);
 
-                    const responseData = {
-                    };
+                    const responseData = {};
                     requestNames.forEach((name, index) => {
                         responseData[name] = responses[index].data;
                     });
@@ -338,7 +337,23 @@ const RiskAnalysis = () => {
 
                                         <p className="risk-terms-text">
 
-                                            시작하기를 클릭하면 <a href="#" onClick={(e) => e.preventDefault()}>서비스 약관</a>에 동의하게 됩니다.
+                                            시작하기를 클릭하면{' '}
+                                            <button
+                                                type="button"
+                                                onClick={(e) => e.preventDefault()}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#007bff',
+                                                    textDecoration: 'underline',
+                                                    cursor: 'pointer',
+                                                    padding: 0,
+                                                    font: 'inherit'
+                                                }}
+                                            >
+                                                서비스 약관
+                                            </button>
+                                            에 동의하게 됩니다.
                                         </p>
                                     </div>
                                 </form>
