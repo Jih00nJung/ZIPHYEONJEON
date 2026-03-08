@@ -2,12 +2,15 @@ import React from 'react';
 import './ArchitectureSection.css';
 
 // 개별 카드 컴포넌트
-export const ArchitectureCard = ({title, subtitle, description, color }) => {
+export const ArchitectureCard = ({icon, title, subtitle, description, color}) => {
     return (
         <div className="arch-card">
-            <div className="icon-wrapper" style={{ backgroundColor: `${color}10` }}>
-            </div>
-            <h3 className="card-title">{title}</h3>
+            <div className="icon-wrapper" style={{backgroundColor: `${color}10`}}>
+                <span className="material-symbols-outlined" style={{color: color}}>
+                {icon}
+            </span>
+        </div>
+    <h3 className="card-title">{title}</h3>
             <p className="card-subtitle">{subtitle}</p>
             <p className="card-description">{description}</p>
         </div>
@@ -15,7 +18,7 @@ export const ArchitectureCard = ({title, subtitle, description, color }) => {
 };
 
 // 전체 섹션 컴포넌트
-const ArchitectureSection = ({ header, subHeader, description, children }) => {
+const ArchitectureSection = ({header, subHeader, description, children}) => {
     return (
         <section className="arch-section">
             <div className="arch-container">
