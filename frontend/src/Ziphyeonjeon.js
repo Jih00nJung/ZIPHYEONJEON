@@ -19,10 +19,10 @@ const Ziphyeonjeon = () => {
                             정밀 권리 분석으로 리스크를 사전에 차단합니다.
                         </p>
 
-                        <SearchContainer
-                            placeholderTxt="도로명 주소 또는 지번을 입력하세요"
-                            buttonName="리스크 조회"
-                        />
+                        {/*<SearchContainer*/}
+                        {/*    placeholderTxt="도로명 주소 또는 지번을 입력하세요"*/}
+                        {/*    buttonName="리스크 조회"*/}
+                        {/*/>*/}
                     </div>
                 </div>
             </section>
@@ -32,16 +32,19 @@ const Ziphyeonjeon = () => {
                 headDescription="Java 21 & Spring Boot 기반의 견고한 백엔드 시스템"
             >
                 <ArchitectureCard
+                    icon="dns"
                     title="Spring Boot Server"
                     description="Main API 및 비즈니스 로직 처리"
                     color="#3b82f6"
                 />
                 <ArchitectureCard
+                    icon="psychology"
                     title="Python AI Server"
                     description="OCR 분석 및 LLM 기반 위험도 예측"
                     color="#10b981"
                 />
                 <ArchitectureCard
+                    icon="database"
                     title="MySQL"
                     description="부동산 데이터 및 유저 정보 관리"
                     color="#f59e0b"

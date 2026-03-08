@@ -44,14 +44,14 @@ public class RiskAnalysisService {
 
         String grade = calculateTotalGrade(totalScore);
 
-        RiskAnalysisResult analysis = new RiskAnalysisResult(totalScore, grade);
+        RiskAnalysisResult analysis = new RiskAnalysisResult(
+                totalScore,
+                grade,
+                dScore,
+                bScore,
+                oScore
+        );
         analysis.setAddress(address);
-        analysis.setAnalyzedAt(LocalDateTime.now());
-        analysis.setTotalSafetyScore(totalScore);
-        analysis.setFinalGrade(grade);
-        analysis.setDisasterRiskScore(dScore);
-        analysis.setBuildingRiskScore(bScore);
-        analysis.setRegisterRiskScore(oScore);
 
         return riskAnalysisRepository.save(analysis);
     }

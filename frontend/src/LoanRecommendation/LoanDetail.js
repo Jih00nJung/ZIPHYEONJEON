@@ -5,14 +5,33 @@ import MainLayout from "../layouts/MainLayout";
 import Badge from '../components/common/Badge';
 import axios from "axios";
 
+/**
+ * @typedef {Object} LoanData
+ * @property {string} usge - 용도
+ * @property {string} irtCtg - 금리 유형
+ * @property {string} finPrdNm - 금융 상품명
+ * @property {string} ofrInstNm - 제공 기관명
+ * @property {string} irt - 금리
+ * @property {string} lnLmt - 대출 한도
+ * @property {string} maxTotLnTrm - 대출 기간
+ * @property {string} rdptMthd - 상환 방법
+ * @property {string} trgt - 대상
+ * @property {string} incm - 소득 조건
+ * @property {string} suprTgtDtlCond - 세부 조건
+ * @property {string} cnpl - 연락처
+ * @property {string} rltSite - 관련 사이트
+ */
+
 const LoanDetail = () => {
     const location = useLocation();
+
+    const API_BASE_URL = process.env.REACT_APP_API_URL;
 
     const { snq } = useParams();
     const [loanData, setLoanData] = useState(null);
 
     useEffect(() => {
-        axios.get(`/api/loan/detail/${snq}`)
+        axios.get(`${API_BASE_URL}/api/loan/detail/${snq}`)
             .then(response => setLoanData(response.data))
             .catch(error => console.error("데이터 로드 실패:", error));
     }, [snq]);
@@ -37,11 +56,11 @@ const LoanDetail = () => {
                     <div className="ld-header-main-LoanDetail">
                         <div className="ld-title-area-LoanDetail">
                             <div className="ld-badge-row-LoanDetail">
-                                <Badge color="blue" className="badge-LoanDetail">{loanData.usge}</Badge>
-                                <Badge color="gray" className="badge-LoanDetail">{loanData.irtCtg}</Badge>
+                                <Badge color="blue" className="badge-LoanDetail">{loanData?.usge}</Badge>
+                                <Badge color="gray" className="badge-LoanDetail">{loanData?.irtCtg}</Badge>
                             </div>
-                            <h1 className="ld-main-title-LoanDetail">{loanData.finPrdNm}</h1>
-                            <p className="ld-sub-title-LoanDetail">{loanData.ofrInstNm}에서 지원하는 프로그램</p>
+                            <h1 className="ld-main-title-LoanDetail">{loanData?.finPrdNm}</h1>
+                            <p className="ld-sub-title-LoanDetail">{loanData?.ofrInstNm}에서 지원하는 프로그램</p>
                         </div>
                         <div className="ld-action-btns-LoanDetail">
                             <button className="ld-icon-btn-LoanDetail"><span className="material-icons">share</span>
@@ -61,19 +80,19 @@ const LoanDetail = () => {
                             <div className="ld-info-grid-LoanDetail">
                                 <div className="ld-info-item-LoanDetail">
                                     <span className="ld-label-LoanDetail">최저 금리</span>
-                                    <span className="ld-value-LoanDetail primary-LoanDetail">{loanData.irt}</span>
+                                    <span className="ld-value-LoanDetail primary-LoanDetail">{loanData?.irt}</span>
                                 </div>
                                 <div className="ld-info-item-LoanDetail">
                                     <span className="ld-label-LoanDetail">최대 한도</span>
-                                    <span className="ld-value-LoanDetail">{loanData.lnLmt}</span>
+                                    <span className="ld-value-LoanDetail">{loanData?.lnLmt}</span>
                                 </div>
                                 <div className="ld-info-item-LoanDetail">
                                     <span className="ld-label-LoanDetail">대출 기간</span>
-                                    <span className="ld-value-LoanDetail">{loanData.maxTotLnTrm}</span>
+                                    <span className="ld-value-LoanDetail">{loanData?.maxTotLnTrm}</span>
                                 </div>
                                 <div className="ld-info-item-LoanDetail">
                                     <span className="ld-label-LoanDetail">상환 방법</span>
-                                    <span className="ld-value-LoanDetail">{loanData.rdptMthd}</span>
+                                    <span className="ld-value-LoanDetail">{loanData?.rdptMthd}</span>
                                 </div>
                             </div>
                         </section>
@@ -84,15 +103,15 @@ const LoanDetail = () => {
                             <div className="ld-desc-list-LoanDetail">
                                 <div className="ld-desc-row-LoanDetail">
                                     <span className="ld-desc-label-LoanDetail">대상 조건</span>
-                                    <p className="ld-desc-value-LoanDetail">{loanData.trgt}</p>
+                                    <p className="ld-desc-value-LoanDetail">{loanData?.trgt}</p>
                                 </div>
                                 <div className="ld-desc-row-LoanDetail">
                                     <span className="ld-desc-label-LoanDetail">소득 조건</span>
-                                    <p className="ld-desc-value-LoanDetail">{loanData.incm}</p>
+                                    <p className="ld-desc-value-LoanDetail">{loanData?.incm}</p>
                                 </div>
                                 <div className="ld-desc-row-LoanDetail full-LoanDetail">
                                     <span className="ld-desc-label-LoanDetail">세부 내용</span>
-                                    <div className="ld-desc-box-LoanDetail">{loanData.suprTgtDtlCond}</div>
+                                    <div className="ld-desc-box-LoanDetail">{loanData?.suprTgtDtlCond}</div>
                                 </div>
                             </div>
                         </section>
@@ -106,16 +125,16 @@ const LoanDetail = () => {
                                     <span className="material-icons">domain</span>
                                 </div>
                                 <div className="ld-agency-text-LoanDetail">
-                                    <strong className="ld-agency-name-LoanDetail">{loanData.ofrInstNm}</strong>
+                                    <strong className="ld-agency-name-LoanDetail">{loanData?.ofrInstNm}</strong>
                                     <div className="ld-agency-contact-LoanDetail">
                                         <span className="material-icons">phone</span>
-                                        <span className="ld-contact-text-LoanDetail">{loanData.cnpl}</span>
+                                        <span className="ld-contact-text-LoanDetail">{loanData?.cnpl}</span>
                                     </div>
                                     <div className="ld-agency-link-LoanDetail">
                                         <span className="material-icons">language</span>
-                                        <a href={loanData.rltSite} target="_blank" rel="noopener noreferrer"
+                                        <a href={loanData?.rltSite} target="_blank" rel="noopener noreferrer"
                                             className="ld-link-text-LoanDetail">
-                                            {loanData.rltSite}
+                                            {loanData?.rltSite}
                                         </a>
                                     </div>
                                 </div>

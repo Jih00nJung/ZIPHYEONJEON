@@ -7,6 +7,23 @@ import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import { useLocation, useNavigate } from "react-router-dom";
 
+/**
+ * @typedef {Object} AnalysisData
+ * @property {string} address - 주소
+ * @property {string} finalGrade - 최종 등급 (안전/주의 등)
+ * @property {number} totalSafetyScore - 종합 안전 점수
+ * @property {number} disasterRiskScore - 재해 위험 점수
+ * @property {number} buildingRiskScore - 건물 위험 점수
+ * @property {number} registerRiskScore - 등기 위험 점수 (OCR)
+ * @property {string[]} disasterRisks - 재해 위험 상세 내역
+ * @property {string[]} buildingRisks - 건물 위험 상세 내역
+ * @property {string[]} registerRisks - 등기 위험 상세 내역
+ */
+/**
+ * @typedef {Object} RiskAnalysisResult
+ * @property {AnalysisData} analysisData - 분석 데이터 객체
+ */
+
 const RiskReport = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -16,6 +33,7 @@ const RiskReport = () => {
         window.scrollTo(0, 0);
     }, []);
 
+    /** @type {RiskAnalysisResult} */
     const resultData = location.state?.riskAnalysisResult;
 
     if (!resultData) {

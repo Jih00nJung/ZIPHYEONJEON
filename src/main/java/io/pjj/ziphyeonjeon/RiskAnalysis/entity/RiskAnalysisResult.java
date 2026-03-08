@@ -44,9 +44,14 @@ public class RiskAnalysisResult {
     @Column(name = "LEGAL_ANALYSIS_RESULT")
     private String legalAnalysisResult;
 
-    public RiskAnalysisResult(BigDecimal totalSafetyScore, String finalGrade) {
+    public RiskAnalysisResult(BigDecimal totalSafetyScore, String finalGrade,
+                              BigDecimal disasterRiskScore, BigDecimal buildingRiskScore,
+                              BigDecimal registerRiskScore) {
         this.totalSafetyScore = totalSafetyScore;
         this.finalGrade = finalGrade;
+        this.disasterRiskScore = disasterRiskScore;
+        this.buildingRiskScore = buildingRiskScore;
+        this.registerRiskScore = registerRiskScore;
         this.analyzedAt = LocalDateTime.now();
     }
 
