@@ -218,14 +218,15 @@ const RiskReport = () => {
     );
 };
 
-/* Internal Helpers */
+/*
+ Internal Helpers 
 const Step = ({ icon, label, active, current, disabled }) => (
     <div className={`step-risk ${active ? 'active' : ''} ${current ? 'current' : ''} ${disabled ? 'disabled' : ''}`}>
         <div className="circle-risk"><span className="material-symbols-outlined">{icon}</span></div>
         <p dangerouslySetInnerHTML={{ __html: label }}></p>
     </div>
 );
-
+*/
 const SmallProg = ({ label, val, color }) => (
     <div className="small-stat-risk">
         <div className="lbl-row-risk"><span>{label}</span><strong className={`text-${color}`}>{val}%</strong></div>

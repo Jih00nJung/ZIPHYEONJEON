@@ -1,7 +1,7 @@
 import React from 'react';
 import './Ziphyeonjeon.css';
 import MainLayout from './layouts/MainLayout';
-import SearchContainer from "./components/SearchContainer";
+/*import SearchContainer from "./components/SearchContainer";*/
 import ArchitectureSection, { ArchitectureCard } from './components/ArchitectureSection';
 
 const Ziphyeonjeon = () => {
