@@ -45,8 +45,8 @@ const LoanDetail = () => {
                 <header className="ld-header-LoanDetail">
                     <Link
                         to={`/loan/list`}
-                        state={{prevFilters: location.state?.prevFilters}}
-                        style={{textDecoration: 'none'}}
+                        state={{ prevFilters: location.state?.prevFilters }}
+                        style={{ textDecoration: 'none' }}
                     >
                         <button className="ld-back-btn-LoanDetail">
                             <span className="material-icons">chevron_left</span>
