@@ -117,7 +117,7 @@ const LoanList = () => {
         };
 
         fetchLoans();
-    }, []);
+    }, [API_BASE_URL]);
 
     return (
         <MainLayout>

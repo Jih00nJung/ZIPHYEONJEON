@@ -151,11 +151,11 @@ const RiskAnalysis = () => {
             const responses = await Promise.all(requestPromises);
             console.log(`${address}에 대한 데이터 요청...`);
 
-            const responseData = {
-            };
-            requestNames.forEach((name, index) => {
-                responseData[name] = responses[index].data;
-            });
+                    const responseData = {
+                    };
+                    requestNames.forEach((name, index) => {
+                        responseData[name] = responses[index].data;
+                    });
 
             const riskAnalysisResult = {
                 address: address,
@@ -338,11 +338,11 @@ const RiskAnalysis = () => {
 
                                     <p className="risk-terms-text">
 
-                                        시작하기를 클릭하면 <a href="#" onClick={(e) => e.preventDefault()}>서비스 약관</a>에 동의하게 됩니다.
-                                    </p>
-                                </div>
-                            </form>
-                        </div>
+                                            시작하기를 클릭하면 <a href="#" onClick={(e) => e.preventDefault()}>서비스 약관</a>에 동의하게 됩니다.
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
 
                     </div>
                 </main>

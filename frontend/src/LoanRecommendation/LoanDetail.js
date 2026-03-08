@@ -34,7 +34,7 @@ const LoanDetail = () => {
         axios.get(`${API_BASE_URL}/api/loan/detail/${snq}`)
             .then(response => setLoanData(response.data))
             .catch(error => console.error("데이터 로드 실패:", error));
-    }, [snq]);
+    }, [API_BASE_URL, snq]);
 
     if (!loanData) return <div className="loading-LoanDetail">데이터를 불러오는 중입니다...</div>;
 
