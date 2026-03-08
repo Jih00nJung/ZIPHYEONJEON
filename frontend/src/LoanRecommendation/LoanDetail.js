@@ -25,7 +25,7 @@ import axios from "axios";
 const LoanDetail = () => {
     const location = useLocation();
 
-    const API_BASE_URL = process.env.REACT_APP_API_URL;
+    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://158.180.80.19:8080";
 
     const { snq } = useParams();
     const [loanData, setLoanData] = useState(null);
@@ -34,7 +34,7 @@ const LoanDetail = () => {
         axios.get(`${API_BASE_URL}/api/loan/detail/${snq}`)
             .then(response => setLoanData(response.data))
             .catch(error => console.error("데이터 로드 실패:", error));
-    }, [snq]);
+    }, [API_BASE_URL, snq]);
 
     if (!loanData) return <div className="loading-LoanDetail">데이터를 불러오는 중입니다...</div>;
 
@@ -45,8 +45,8 @@ const LoanDetail = () => {
                 <header className="ld-header-LoanDetail">
                     <Link
                         to={`/loan/list`}
-                        state={{prevFilters: location.state?.prevFilters}}
-                        style={{textDecoration: 'none'}}
+                        state={{ prevFilters: location.state?.prevFilters }}
+                        style={{ textDecoration: 'none' }}
                     >
                         <button className="ld-back-btn-LoanDetail">
                             <span className="material-icons">chevron_left</span>

@@ -46,7 +46,8 @@ const Chatbot = () => {
 
         try {
             // Call Spring Boot API
-            const response = await axios.post('/api/chat', { message: text });
+            const baseUrl = process.env.REACT_APP_API_URL || '';
+            const response = await axios.post(`${baseUrl}/api/chat`, { message: text });
             const botReply = response.data.reply;
             setMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
         } catch (error) {
