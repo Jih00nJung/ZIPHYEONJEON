@@ -1,0 +1,130 @@
+{
+  "model_type": "LightGBMRegressor",
+  "models": [
+    "sale_h1m",
+    "sale_h3m",
+    "sale_h6m",
+    "rent_h1m",
+    "rent_h3m"
+  ],
+  "feature_count": 36,
+  "categorical_count": 2,
+  "feature_columns": [
+    "month",
+    "sido",
+    "property_type",
+    "mean_building_age",
+    "mean_floor",
+    "mean_area",
+    "mean_price",
+    "mean_price_per_m2",
+    "txn_count",
+    "kb_price_index",
+    "jeonse_ratio",
+    "interest_rate",
+    "mean_price_lag1",
+    "mean_price_lag3",
+    "mean_price_lag6",
+    "mean_price_per_m2_lag1",
+    "mean_price_per_m2_lag3",
+    "mean_price_per_m2_lag6",
+    "txn_count_lag1",
+    "txn_count_lag3",
+    "txn_count_lag6",
+    "kb_price_index_lag1",
+    "kb_price_index_lag3",
+    "kb_price_index_lag6",
+    "jeonse_ratio_lag1",
+    "jeonse_ratio_lag3",
+    "jeonse_ratio_lag6",
+    "interest_rate_lag1",
+    "interest_rate_lag3",
+    "interest_rate_lag6",
+    "mean_price_rollmean_3",
+    "txn_count_rollmean_3",
+    "mean_price_pct_change_1",
+    "kb_price_index_pct_change_1",
+    "jeonse_ratio_diff_1",
+    "interest_rate_diff_1"
+  ],
+  "categorical_columns": [
+    "sido",
+    "property_type"
+  ],
+  "horizons": {
+    "sale": [
+      1,
+      3,
+      6
+    ],
+    "rent": [
+      1,
+      3
+    ]
+  },
+  "target_rule": {
+    "sale": "future_mean_price_hm -> log1p",
+    "rent": "future_mean_price_hm -> log1p"
+  },
+  "price_rule": {
+    "sale": "sale_price_manwon",
+    "rent": "deposit_manwon + monthly_rent_manwon * 100"
+  },
+  "metrics": {
+    "sale_h1m": {
+      "train_mae": 0.05414573760846967,
+      "train_rmse": 0.08193553162249631,
+      "train_r2": 0.9826705827016233,
+      "valid_mae": 0.11558814214925403,
+      "valid_rmse": 0.17233427741177137,
+      "valid_r2": 0.9257791540029197,
+      "test_mae": 0.12081595713849885,
+      "test_rmse": 0.1971734197950829,
+      "test_r2": 0.9021918839083745
+    },
+    "sale_h3m": {
+      "train_mae": 0.05710185680085098,
+      "train_rmse": 0.09272906435289875,
+      "train_r2": 0.9782328455647706,
+      "valid_mae": 0.12262507670060735,
+      "valid_rmse": 0.17513489669906554,
+      "valid_r2": 0.9233177716293682,
+      "test_mae": 0.11443219373381304,
+      "test_rmse": 0.17920791536125383,
+      "test_r2": 0.9194941550330148
+    },
+    "sale_h6m": {
+      "train_mae": 0.05217489941320668,
+      "train_rmse": 0.07946052427645181,
+      "train_r2": 0.9839517407445426,
+      "valid_mae": 0.1265890155029889,
+      "valid_rmse": 0.18372524704455895,
+      "valid_r2": 0.9156107700697341,
+      "test_mae": 0.1147817557059656,
+      "test_rmse": 0.18173201166093478,
+      "test_r2": 0.9172103770431075
+    },
+    "rent_h1m": {
+      "train_mae": 0.031816203165505416,
+      "train_rmse": 0.04251891176209519,
+      "train_r2": 0.9910081332714167,
+      "valid_mae": 0.07162404351143098,
+      "valid_rmse": 0.12273359845654354,
+      "valid_r2": 0.9320891657811493,
+      "test_mae": 0.06870477166330334,
+      "test_rmse": 0.09033876588877612,
+      "test_r2": 0.9648952645962908
+    },
+    "rent_h3m": {
+      "train_mae": 0.031472920907077304,
+      "train_rmse": 0.04235848035327172,
+      "train_r2": 0.9911684800224482,
+      "valid_mae": 0.07930522189841165,
+      "valid_rmse": 0.1313167512955355,
+      "valid_r2": 0.9206055809905179,
+      "test_mae": 0.07666933405355753,
+      "test_rmse": 0.12769749192051122,
+      "test_r2": 0.9310177758637235
+    }
+  }
+}
