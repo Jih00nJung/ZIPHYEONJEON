@@ -9,16 +9,25 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MolitAptIngestRunner implements CommandLineRunner {
 
-    private final MolitAptCsvIngestService service;
+    private final MolitAptCsvIngestService csvService;
+    private final HouseDataMigrationService migrationService;
     private final Environment env;
 
     @Override
     public void run(String... args) throws Exception {
-        String enabled = env.getProperty("molit.ingest", "false");
-        if (!"true".equalsIgnoreCase(enabled)) return;
+        String ingestEnabled = env.getProperty("molit.ingest", "false");
+        String migrationEnabled = env.getProperty("house.migration", "false");
 
-        System.out.println("[MOLIT] ingest start...");
-        service.ingestAllApt();
-        System.out.println("[MOLIT] ingest done.");
+        if ("true".equalsIgnoreCase(ingestEnabled)) {
+            System.out.println("[MOLIT] ingest start...");
+            csvService.ingestAllApt();
+            System.out.println("[MOLIT] ingest done.");
+        }
+
+        if ("true".equalsIgnoreCase(migrationEnabled)) {
+            System.out.println("[HOUSE] data migration start...");
+            migrationService.migrateAllDataToHouse();
+            System.out.println("[HOUSE] data migration done.");
+        }
     }
 }
