@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class HouseSearchRequest {
     private String sigungu; // 예: "서울특별시 동작구"
+    private String dong; // 예: "상도동" (옵션)
+    private String keyword; // 예: "상도로 123" 또는 "래미안" (도로명, 단지명 검색용 옵션)
     private String propertyType; // "아파트", "연립다세대", "오피스텔"
     private String dealType; // "매매", "전월세" 등
     private String startMonth; // "202401"

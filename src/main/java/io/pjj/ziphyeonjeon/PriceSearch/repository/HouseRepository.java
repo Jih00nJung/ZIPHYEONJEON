@@ -26,19 +26,36 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     // 시군구와 계약년월 기반 검색
     List<House> findBySigunguContainingAndContractYm(String sigungu, String contractYm);
 
-    // [NEW] 기간 설정, 페이징 기반 통합 실거래가 검색 쿼리
-    Page<House> findBySigunguContainingAndPropertyTypeAndDealTypeAndContractYmBetweenOrderByContractYmDescContractDayDesc(
-            String sigungu, String propertyType, String dealType, String startMonth, String endMonth, Pageable pageable);
+    // [NEW] 기간 설정, 페이징 기반 통합 실거래가 검색 쿼리 (동 포함, 도로명/단지명 키워드 포함)
+    @Query("SELECT h FROM House h " +
+           "WHERE h.sigungu LIKE %:sigungu% " +
+           "AND (:dong IS NULL OR :dong = '' OR h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR h.roadname LIKE %:keyword% OR h.name LIKE %:keyword%) " +
+           "AND (:propertyType IS NULL OR :propertyType = '' OR h.propertyType = :propertyType) " +
+           "AND (:dealType IS NULL OR :dealType = '' OR h.dealType = :dealType) " +
+           "AND h.contractYm BETWEEN :startMonth AND :endMonth " +
+           "ORDER BY h.contractYm DESC, h.contractDay DESC")
+    Page<House> searchHouseWithPagination(
+            @Param("sigungu") String sigungu, 
+            @Param("dong") String dong, 
+            @Param("keyword") String keyword,
+            @Param("propertyType") String propertyType, 
+            @Param("dealType") String dealType, 
+            @Param("startMonth") String startMonth, 
+            @Param("endMonth") String endMonth, 
+            Pageable pageable);
 
-    // [NEW] 트렌드 그래프: 3.3제곱미터(평) 당 평균 매매/전세 단가
+    // [NEW] 트렌드 그래프: 매매/전세는 3.3㎡(평) 당 단가, 월세는 보증금과 월세액 그대로 반환 (듀얼 그래프용)
     @Query("SELECT h.contractYm, " +
             "AVG(CASE " +
             "  WHEN h.dealType = '매매' THEN (h.trade / h.area) * 3.3 " +
             "  WHEN h.dealType LIKE '%전세%' THEN (h.deposit / h.area) * 3.3 " +
-            "  WHEN h.dealType = '월세' THEN (h.rentfee) * 3.3 " + // 월세는 단가보다는 그대로 쓰는 경우가 많지만 통일성을 위해 식 유지
-            "  ELSE 0 END) " +
+            "  ELSE NULL END), " +
+            "AVG(CASE WHEN h.dealType = '월세' THEN h.deposit ELSE NULL END), " +
+            "AVG(CASE WHEN h.dealType = '월세' THEN h.rentfee ELSE NULL END) " +
             "FROM House h " +
             "WHERE h.sigungu LIKE %:sigungu% " +
+            "AND (:dong IS NULL OR :dong = '' OR h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
             "AND h.propertyType = :propertyType " +
             "AND h.dealType = :dealType " +
             "AND h.contractYm BETWEEN :startMonth AND :endMonth " +
@@ -46,6 +63,7 @@ public interface HouseRepository extends JpaRepository<House, Long> {
             "ORDER BY h.contractYm ASC")
     List<Object[]> findMonthlyTrendGraphData(
             @Param("sigungu") String sigungu,
+            @Param("dong") String dong,
             @Param("propertyType") String propertyType,
             @Param("dealType") String dealType,
             @Param("startMonth") String startMonth,
@@ -65,6 +83,10 @@ public interface HouseRepository extends JpaRepository<House, Long> {
                             @Param("maxArea") BigDecimal maxArea,
                             @Param("propertyType") String propertyType);
 
+    // [NEW] 전세가율 계산용: 가장 최근 매매 실거래가 1건 조회 (전용면적 ±10% 필터 포함)
+    House findTopBySigunguContainingAndEmdContainingAndPropertyTypeAndDealTypeAndAreaBetweenOrderByContractYmDescContractDayDesc(
+            String sigungu, String dong, String propertyType, String dealType, BigDecimal minArea, BigDecimal maxArea);
+
     // 평균 전세보증금 - AREA 범위와 타입 지정
     @Query("SELECT AVG(h.deposit) FROM House h " +
             "WHERE h.sigungu LIKE %:sigungu% " +
@@ -78,24 +100,29 @@ public interface HouseRepository extends JpaRepository<House, Long> {
                               @Param("maxArea") BigDecimal maxArea,
                               @Param("propertyType") String propertyType);
 
-    // [NEW] 지역 시세 변동 단독 그래프용 9-in-1 통합 쿼리 (아파트, 빌라, 오피스텔 × 매매, 전세, 월세)
+    // [NEW] 지역 시세 변동 단독 그래프용 12-in-1 통합 쿼리 (아파트/빌라/오피스텔 × 매매/전세/월세보증금/월세액)
     @Query("SELECT h.contractYm, " +
             "AVG(CASE WHEN h.propertyType = '아파트' AND h.dealType = '매매' THEN (h.trade / h.area) * 3.3 ELSE NULL END), " +
             "AVG(CASE WHEN h.propertyType = '아파트' AND h.dealType LIKE '%전세%' THEN (h.deposit / h.area) * 3.3 ELSE NULL END), " +
-            "AVG(CASE WHEN h.propertyType = '아파트' AND h.dealType = '월세' THEN h.rentfee * 3.3 ELSE NULL END), " +
+            "AVG(CASE WHEN h.propertyType = '아파트' AND h.dealType = '월세' THEN h.deposit ELSE NULL END), " +
+            "AVG(CASE WHEN h.propertyType = '아파트' AND h.dealType = '월세' THEN h.rentfee ELSE NULL END), " +
             "AVG(CASE WHEN h.propertyType = '연립다세대' AND h.dealType = '매매' THEN (h.trade / h.area) * 3.3 ELSE NULL END), " +
             "AVG(CASE WHEN h.propertyType = '연립다세대' AND h.dealType LIKE '%전세%' THEN (h.deposit / h.area) * 3.3 ELSE NULL END), " +
-            "AVG(CASE WHEN h.propertyType = '연립다세대' AND h.dealType = '월세' THEN h.rentfee * 3.3 ELSE NULL END), " +
+            "AVG(CASE WHEN h.propertyType = '연립다세대' AND h.dealType = '월세' THEN h.deposit ELSE NULL END), " +
+            "AVG(CASE WHEN h.propertyType = '연립다세대' AND h.dealType = '월세' THEN h.rentfee ELSE NULL END), " +
             "AVG(CASE WHEN h.propertyType = '오피스텔' AND h.dealType = '매매' THEN (h.trade / h.area) * 3.3 ELSE NULL END), " +
             "AVG(CASE WHEN h.propertyType = '오피스텔' AND h.dealType LIKE '%전세%' THEN (h.deposit / h.area) * 3.3 ELSE NULL END), " +
-            "AVG(CASE WHEN h.propertyType = '오피스텔' AND h.dealType = '월세' THEN h.rentfee * 3.3 ELSE NULL END) " +
+            "AVG(CASE WHEN h.propertyType = '오피스텔' AND h.dealType = '월세' THEN h.deposit ELSE NULL END), " +
+            "AVG(CASE WHEN h.propertyType = '오피스텔' AND h.dealType = '월세' THEN h.rentfee ELSE NULL END) " +
             "FROM House h " +
             "WHERE h.sigungu LIKE %:sigungu% " +
+            "AND (:dong IS NULL OR :dong = '' OR h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
             "AND h.contractYm BETWEEN :startMonth AND :endMonth " +
             "GROUP BY h.contractYm " +
             "ORDER BY h.contractYm ASC")
     List<Object[]> findComprehensiveMonthlyTrendGraphData(
             @Param("sigungu") String sigungu,
+            @Param("dong") String dong,
             @Param("startMonth") String startMonth,
             @Param("endMonth") String endMonth);
 }

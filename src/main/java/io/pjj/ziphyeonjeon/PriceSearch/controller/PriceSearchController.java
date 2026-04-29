@@ -76,9 +76,10 @@ public class PriceSearchController {
     @org.springframework.web.bind.annotation.GetMapping("/trend")
     public io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceTrendResponse getRegionalTrend(
             @RequestParam String sigungu,
+            @RequestParam(required = false) String dong,
             @RequestParam String startMonth,
             @RequestParam String endMonth) {
-        return priceSearchService.getRegionalTrend(sigungu, startMonth, endMonth);
+        return priceSearchService.getRegionalTrend(sigungu, dong, startMonth, endMonth);
     }
 
     // P-007
