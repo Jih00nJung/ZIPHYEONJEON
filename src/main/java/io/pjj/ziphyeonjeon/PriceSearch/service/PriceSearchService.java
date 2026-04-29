@@ -428,6 +428,7 @@ public class PriceSearchService {
 
         Double avgSale = 0.0;
         Double avgJeonse = 0.0;
+        Long avgSaleLong = 0L;
 
         if (sigungu != null && !sigungu.isEmpty()) {
             String propertyType = null;
@@ -438,11 +439,23 @@ public class PriceSearchService {
             else if (request.getPropertyType().contains("오피스텔"))
                 propertyType = "오피스텔";
 
-            avgSale = houseRepo.findAverageTrade(sigungu, dong, minArea, maxArea, propertyType);
+            // 1. 가장 최근 매매 실거래가 딱 1건만 조회 (면적 ±10% 내외)
+            House recentTrade = houseRepo.findTopBySigunguContainingAndEmdContainingAndPropertyTypeAndDealTypeAndAreaBetweenOrderByContractYmDescContractDayDesc(
+                    sigungu, dong, propertyType, "매매", minArea, maxArea);
+
+            if (recentTrade != null && recentTrade.getTrade() != null) {
+                avgSaleLong = recentTrade.getTrade(); // 만원 단위 그대로
+            } else {
+                // 2. [Fallback 옵션 B] 해당 조건의 최근 거래내역이 아예 없는 경우, 동네 평균가로 대략적인 계산
+                avgSale = houseRepo.findAverageTrade(sigungu, dong, minArea, maxArea, propertyType);
+                if (avgSale != null) {
+                    avgSaleLong = Math.round(avgSale);
+                }
+            }
+
             avgJeonse = houseRepo.findAverageDeposit(sigungu, dong, minArea, maxArea, propertyType);
         }
 
-        Long avgSaleLong = (avgSale != null) ? Math.round(avgSale) : 0L;
         Long avgJeonseLong = (avgJeonse != null) ? Math.round(avgJeonse) : 0L;
 
         // 매매 데이터가 없으면 비율 계산 불가
@@ -518,13 +531,13 @@ public class PriceSearchService {
     }
 
     // --- P-006: 지역 시세 변동 추이 (그래프 단독 기능 900% 최적화 적용) ---
-    public io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceTrendResponse getRegionalTrend(String sigungu, String startMonth, String endMonth) {
+    public io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceTrendResponse getRegionalTrend(String sigungu, String dong, String startMonth, String endMonth) {
         
         java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceTrendResponse.TrendItem> trends = new java.util.ArrayList<>();
         
         if (sigungu != null && !sigungu.isEmpty()) {
             // 단 1번의 쿼리로 9가지 평균가 데이터를 기간에 맞춰 모두 가져옴
-            java.util.List<Object[]> rawData = houseRepo.findComprehensiveMonthlyTrendGraphData(sigungu, startMonth, endMonth);
+            java.util.List<Object[]> rawData = houseRepo.findComprehensiveMonthlyTrendGraphData(sigungu, dong, startMonth, endMonth);
             
             if (rawData != null) {
                 for (Object[] row : rawData) {
@@ -535,18 +548,21 @@ public class PriceSearchService {
                         .period(month)
                         .build();
                     
-                    // row[1] ~ row[9] 순서에 맞게 세팅 (반올림 처리)
+                    // row[1] ~ row[12] 순서에 맞게 세팅 (반올림 처리)
                     item.setAptSale(formatVal((Double)row[1]));
                     item.setAptJeonse(formatVal((Double)row[2]));
-                    item.setAptWolse(formatVal((Double)row[3]));
+                    item.setAptWolseDeposit(formatVal((Double)row[3]));
+                    item.setAptWolseRent(formatVal((Double)row[4]));
                     
-                    item.setVillaSale(formatVal((Double)row[4]));
-                    item.setVillaJeonse(formatVal((Double)row[5]));
-                    item.setVillaWolse(formatVal((Double)row[6]));
+                    item.setVillaSale(formatVal((Double)row[5]));
+                    item.setVillaJeonse(formatVal((Double)row[6]));
+                    item.setVillaWolseDeposit(formatVal((Double)row[7]));
+                    item.setVillaWolseRent(formatVal((Double)row[8]));
                     
-                    item.setOfficetelSale(formatVal((Double)row[7]));
-                    item.setOfficetelJeonse(formatVal((Double)row[8]));
-                    item.setOfficetelWolse(formatVal((Double)row[9]));
+                    item.setOfficetelSale(formatVal((Double)row[9]));
+                    item.setOfficetelJeonse(formatVal((Double)row[10]));
+                    item.setOfficetelWolseDeposit(formatVal((Double)row[11]));
+                    item.setOfficetelWolseRent(formatVal((Double)row[12]));
                     
                     trends.add(item);
                 }
@@ -569,6 +585,8 @@ public class PriceSearchService {
             io.pjj.ziphyeonjeon.PriceSearch.dto.request.HouseSearchRequest request) {
 
         String sigungu = request.getSigungu() != null ? request.getSigungu() : "";
+        String dong = request.getDong();
+        String keyword = request.getKeyword();
         String propertyType = request.getPropertyType();
         String dealType = request.getDealType();
         String startMonth = request.getStartMonth();
@@ -579,25 +597,27 @@ public class PriceSearchService {
 
         // 1. 페이징된 매물 리스트 조회
         org.springframework.data.domain.Page<House> pageResult = houseRepo
-                .findBySigunguContainingAndPropertyTypeAndDealTypeAndContractYmBetweenOrderByContractYmDescContractDayDesc(
-                        sigungu, propertyType, dealType, startMonth, endMonth, pageable);
+                .searchHouseWithPagination(
+                        sigungu, dong, keyword, propertyType, dealType, startMonth, endMonth, pageable);
 
         // 2. 지역 시세 변동 그래프 데이터 조회 (3.3m2 / 평당 평균가)
         java.util.List<Object[]> graphRaw = houseRepo.findMonthlyTrendGraphData(
-                sigungu, propertyType, dealType, startMonth, endMonth);
+                sigungu, dong, propertyType, dealType, startMonth, endMonth);
 
         java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.HouseSearchResponse.TrendData> trendList = new java.util.ArrayList<>();
         if (graphRaw != null) {
             for (Object[] row : graphRaw) {
                 String month = String.valueOf(row[0]);
-                Double val = (Double) row[1];
-                if (val != null) {
-                    val = Math.round(val * 10.0) / 10.0; // 소수점 1자리 반올림
-                    trendList.add(io.pjj.ziphyeonjeon.PriceSearch.dto.response.HouseSearchResponse.TrendData.builder()
-                            .month(month)
-                            .avgPricePerPyeong(val)
-                            .build());
-                }
+                Double price = (Double) row[1];
+                Double deposit = (Double) row[2];
+                Double rent = (Double) row[3];
+                
+                trendList.add(io.pjj.ziphyeonjeon.PriceSearch.dto.response.HouseSearchResponse.TrendData.builder()
+                        .month(month)
+                        .avgPrice(price != null ? Math.round(price * 10.0) / 10.0 : null)
+                        .avgDeposit(deposit != null ? Math.round(deposit * 10.0) / 10.0 : null)
+                        .avgRentFee(rent != null ? Math.round(rent * 10.0) / 10.0 : null)
+                        .build());
             }
         }
 

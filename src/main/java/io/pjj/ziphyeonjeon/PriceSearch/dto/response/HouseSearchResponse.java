@@ -27,6 +27,8 @@ public class HouseSearchResponse {
     @Builder
     public static class TrendData {
         private String month; // "202401"
-        private Double avgPricePerPyeong; // 3.3m2 당 평균 거래가
+        private Double avgPrice; // 3.3m2 당 평균 거래가 (매매, 전세용)
+        private Double avgDeposit; // 평균 보증금 (월세용)
+        private Double avgRentFee; // 평균 월세액 (월세용)
     }
 }
