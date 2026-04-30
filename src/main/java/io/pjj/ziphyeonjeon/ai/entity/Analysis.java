@@ -23,6 +23,15 @@ public class Analysis {
     @Column(name = "ANALYSIS_ID")
     private Long analysisId;
 
+    @Column(name = "USER_ID", nullable = false)
+    private Long userId;
+
+    @Column(name = "HOUSE_ID")
+    private Long houseId;
+
+    @Column(name = "STORE_ID")
+    private Long storeId;
+
     // 아파트, 연립다세대, 오피스텔, 상가 등 (상가 개발자 합류 대비)
     @Column(name = "PROPERTY_TYPE", length = 30)
     private String propertyType;
