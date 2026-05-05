@@ -25,6 +25,7 @@ import java.util.Map;
 public class MolitAIPredictService {
 
     private final AnalysisRepository analysisRepository;
+    private final io.pjj.ziphyeonjeon.PriceSearch.repository.HouseRepository houseRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${ai.python.api.url:http://localhost:8000}")
@@ -54,6 +55,7 @@ public class MolitAIPredictService {
             newRecord.setSigungu(sigungu);
             newRecord.setPredictTargetMonth(month);
             newRecord.setPredictedPrice(cachedResult.get().getPredictedPrice());
+            newRecord.setTrendPercentage(cachedResult.get().getTrendPercentage());
             return analysisRepository.save(newRecord);
         }
 
@@ -75,6 +77,15 @@ public class MolitAIPredictService {
             if (responseDto != null && responseDto.getPredictions() != null && !responseDto.getPredictions().isEmpty()) {
                 Double predictedVal = responseDto.getPredictions().get(0);
                 
+                // [NEW] 추세율(Trend Percentage) 계산을 위해 현재 시군구 평균가 조회
+                Double currentAvgPrice = houseRepository.findAveragePriceBySigunguAndPropertyType(sigungu, propertyType, dealType);
+                BigDecimal trendPercentage = BigDecimal.ZERO;
+                if (currentAvgPrice != null && currentAvgPrice > 0) {
+                    // ((예측가 - 현재가) / 현재가) * 100
+                    double trend = ((predictedVal - currentAvgPrice) / currentAvgPrice) * 100.0;
+                    trendPercentage = BigDecimal.valueOf(trend).setScale(2, java.math.RoundingMode.HALF_UP);
+                }
+                
                 Analysis analysis = new Analysis();
                 analysis.setUserId(userId);
                 analysis.setHouseId(houseId);
@@ -83,6 +94,7 @@ public class MolitAIPredictService {
                 analysis.setSigungu(sigungu);
                 analysis.setPredictTargetMonth(month);
                 analysis.setPredictedPrice(BigDecimal.valueOf(predictedVal));
+                analysis.setTrendPercentage(trendPercentage);
                 
                 return analysisRepository.save(analysis);
             } else {

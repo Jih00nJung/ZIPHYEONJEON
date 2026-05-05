@@ -56,6 +56,10 @@ public class Analysis {
     @Column(name = "REFERENCE_YM", length = 10)
     private String referenceYm;
 
+    // [NEW] 추세율(상승/하락 퍼센티지)
+    @Column(name = "TREND_PERCENTAGE", precision = 5, scale = 2)
+    private BigDecimal trendPercentage;
+
     @Column(name = "CREATED_AT")
     private LocalDateTime createdAt;
     

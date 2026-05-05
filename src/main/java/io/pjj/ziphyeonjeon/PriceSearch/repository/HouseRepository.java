@@ -83,6 +83,16 @@ public interface HouseRepository extends JpaRepository<House, Long> {
                             @Param("maxArea") BigDecimal maxArea,
                             @Param("propertyType") String propertyType);
 
+    // [NEW] 지역 전체 평균 매매/전세금액 (면적 제한 없이 지역/유형 전체의 현재 평균가 산출, AI 추세율 계산용)
+    @Query("SELECT AVG(CASE WHEN :dealType = '매매' THEN h.trade ELSE h.deposit END) FROM House h " +
+            "WHERE h.sigungu LIKE %:sigungu% " +
+            "AND h.propertyType = :propertyType " +
+            "AND (h.dealType = '매매' OR h.dealType LIKE '%전세%')")
+    Double findAveragePriceBySigunguAndPropertyType(
+            @Param("sigungu") String sigungu,
+            @Param("propertyType") String propertyType,
+            @Param("dealType") String dealType);
+
     // [NEW] 전세가율 계산용: 가장 최근 매매 실거래가 1건 조회 (전용면적 ±10% 필터 포함)
     House findTopBySigunguContainingAndEmdContainingAndPropertyTypeAndDealTypeAndAreaBetweenOrderByContractYmDescContractDayDesc(
             String sigungu, String dong, String propertyType, String dealType, BigDecimal minArea, BigDecimal maxArea);
