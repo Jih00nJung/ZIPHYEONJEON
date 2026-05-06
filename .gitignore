@@ -48,3 +48,12 @@ out/
 .vscode/
 2.공모전_참고_데이터명세서.xlsx
 1.공모전_가명결합_데이터명세서.xlsx
+
+### Python 가상환경 ###
+zipenv/
+**/zipenv/
+venv/
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
