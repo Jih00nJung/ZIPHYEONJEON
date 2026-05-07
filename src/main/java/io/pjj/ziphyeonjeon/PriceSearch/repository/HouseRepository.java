@@ -26,6 +26,20 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     // 시군구와 계약년월 기반 검색
     List<House> findBySigunguContainingAndContractYm(String sigungu, String contractYm);
 
+    // 시군구와 특정 연도(예: "2024")로 시작하는 계약년월 데이터 모두 조회
+    @Query("SELECT h FROM House h WHERE h.sigungu LIKE CONCAT('%', :sigungu, '%') AND h.contractYm LIKE CONCAT(:year, '%')")
+    List<House> findBySigunguContainingAndContractYmStartingWith(@Param("sigungu") String sigungu, @Param("year") String year);
+
+    // [NEW] 필터 적용 실거래가 다운로드용 쿼리 (빈 값일 경우 무시)
+    @Query("SELECT h FROM House h WHERE h.sigungu LIKE CONCAT('%', :sigungu, '%') " +
+           "AND h.contractYm LIKE CONCAT(:year, '%') " +
+           "AND (:propertyType IS NULL OR :propertyType = '' OR h.propertyType = :propertyType) " +
+           "AND (:dealType IS NULL OR :dealType = '' OR h.dealType = :dealType)")
+    List<House> findDownloadData(@Param("sigungu") String sigungu, 
+                                 @Param("year") String year, 
+                                 @Param("propertyType") String propertyType, 
+                                 @Param("dealType") String dealType);
+
     // [NEW] 기간 설정, 페이징 기반 통합 실거래가 검색 쿼리 (동 포함, 도로명/단지명 키워드 포함)
     @Query("SELECT h FROM House h " +
            "WHERE h.sigungu LIKE %:sigungu% " +
@@ -72,7 +86,7 @@ public interface HouseRepository extends JpaRepository<House, Long> {
 
     // 평균 거래금액(매매 등) - AREA 범위와 타입 지정
     @Query("SELECT AVG(h.trade) FROM House h " +
-            "WHERE h.sigungu LIKE %:sigungu% " +
+            "WHERE h.sigungu LIKE :sigungu% " +
             "AND (h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
             "AND h.area BETWEEN :minArea AND :maxArea " +
             "AND (:propertyType IS NULL OR h.propertyType = :propertyType) " +
@@ -85,7 +99,7 @@ public interface HouseRepository extends JpaRepository<House, Long> {
 
     // [NEW] 지역 전체 평균 매매/전세금액 (면적 제한 없이 지역/유형 전체의 현재 평균가 산출, AI 추세율 계산용)
     @Query("SELECT AVG(CASE WHEN :dealType = '매매' THEN h.trade ELSE h.deposit END) FROM House h " +
-            "WHERE h.sigungu LIKE %:sigungu% " +
+            "WHERE h.sigungu LIKE :sigungu% " +
             "AND h.propertyType = :propertyType " +
             "AND (h.dealType = '매매' OR h.dealType LIKE '%전세%')")
     Double findAveragePriceBySigunguAndPropertyType(
@@ -99,7 +113,7 @@ public interface HouseRepository extends JpaRepository<House, Long> {
 
     // 평균 전세보증금 - AREA 범위와 타입 지정
     @Query("SELECT AVG(h.deposit) FROM House h " +
-            "WHERE h.sigungu LIKE %:sigungu% " +
+            "WHERE h.sigungu LIKE :sigungu% " +
             "AND (h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
             "AND h.area BETWEEN :minArea AND :maxArea " +
             "AND (:propertyType IS NULL OR h.propertyType = :propertyType) " +
@@ -142,12 +156,14 @@ public interface HouseRepository extends JpaRepository<House, Long> {
            "FROM House h " +
            "WHERE h.sigungu LIKE %:sigungu% " +
            "AND (:dong IS NULL OR :dong = '' OR h.emd LIKE %:dong% OR h.sigungu LIKE %:dong%) " +
+           "AND (:keyword IS NULL OR :keyword = '' OR h.roadname LIKE %:keyword% OR h.name LIKE %:keyword%) " +
            "AND (:propertyType IS NULL OR :propertyType = '' OR h.propertyType = :propertyType) " +
            "GROUP BY h.sigungu, h.emd, h.name, h.roadname, h.propertyType " +
            "ORDER BY MAX(h.contractYm) DESC")
     Page<Object[]> findPropertyDirectory(
             @Param("sigungu") String sigungu,
             @Param("dong") String dong,
+            @Param("keyword") String keyword,
             @Param("propertyType") String propertyType,
             Pageable pageable);
 }

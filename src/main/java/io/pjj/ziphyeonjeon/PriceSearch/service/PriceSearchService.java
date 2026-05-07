@@ -680,7 +680,7 @@ public class PriceSearchService {
     }
 
     // --- P-007: 실거래가 다운로드 (CSV) ---
-    public org.springframework.core.io.Resource downloadTradeData(String sidoCode, String sigunguCode, String format) {
+    public org.springframework.core.io.Resource downloadTradeData(String sidoCode, String sigunguCode, String propertyType, String dealType, String format, String year) {
         // 1. Code -> Name Mapping (서울 25개 구)
         java.util.Map<String, String> codeMap = new java.util.HashMap<>();
         codeMap.put("11110", "서울특별시 종로구");
@@ -711,26 +711,26 @@ public class PriceSearchService {
 
         String sigungu = codeMap.getOrDefault(sigunguCode, "서울특별시 강남구");
 
-        // 2. Data Fetch (해당 구의 아파트 매매 최근 데이터)
-        java.util.List<House> list = houseRepo
-                .findBySigunguContainingAndContractYm(sigungu, "202412")
-                .stream()
-                .filter(h -> "아파트".equals(h.getPropertyType()) && "매매".equals(h.getDealType()))
-                .collect(java.util.stream.Collectors.toList());
+        // 2. Data Fetch (해당 구의 입력받은 연도 실거래가 전체 데이터 및 필터 적용)
+        java.util.List<House> list = houseRepo.findDownloadData(sigungu, year, propertyType, dealType);
 
         // 3. Generate CSV (UTF-8 with BOM - 엑셀 한글 깨짐 방지)
         StringBuilder csv = new StringBuilder();
-        csv.append("계약년월,계약일,단지명,시군구,지번,전용면적(㎡),거래금액(만원),층수,건축년도\n");
+        csv.append("계약년월,계약일,유형,거래분류,단지명,시군구,지번,전용면적(㎡),거래금액(만원),보증금(만원),월세(만원),층수,건축년도\n");
 
         for (House entity : list) {
             csv.append(entity.getContractYm()).append(",")
                     .append(entity.getContractDay()).append(",")
+                    .append(escapeCsv(entity.getPropertyType())).append(",")
+                    .append(escapeCsv(entity.getDealType())).append(",")
                     .append(escapeCsv(entity.getName())).append(",")
                     .append(escapeCsv(entity.getSigungu())).append(",")
                     .append(escapeCsv(entity.getJibun())).append(",")
-                    .append(entity.getArea()).append(",")
-                    .append(entity.getTrade()).append(",")
-                    .append(entity.getFloorNo()).append(",")
+                    .append(entity.getArea() != null ? entity.getArea() : "").append(",")
+                    .append(entity.getTrade() != null ? entity.getTrade() : "").append(",")
+                    .append(entity.getDeposit() != null ? entity.getDeposit() : "").append(",")
+                    .append(entity.getRentfee() != null ? entity.getRentfee() : "").append(",")
+                    .append(entity.getFloorNo() != null ? entity.getFloorNo() : "").append(",")
                     .append("").append("\n"); // BuiltYear 없음
         }
 
@@ -864,12 +864,13 @@ public class PriceSearchService {
         String sigungu = request.getSigungu() != null ? request.getSigungu() : "";
         String dong = request.getDong();
         String propertyType = request.getPropertyType();
+        String keyword = request.getKeyword();
 
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
                 request.getPage(), request.getSize());
 
         org.springframework.data.domain.Page<Object[]> pageResult = houseRepo.findPropertyDirectory(
-                sigungu, dong, propertyType, pageable);
+                sigungu, dong, keyword, propertyType, pageable);
 
         return pageResult.map(row -> {
             Long repHouseId = (Long) row[0];

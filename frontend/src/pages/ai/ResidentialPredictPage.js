@@ -63,12 +63,11 @@ const ResidentialPredictPage = () => {
   const handleSearch = async () => {
     if (!keyword.trim()) return;
     try {
-      // 주소 파싱 로직: 마지막 단어를 검색 키워드로 사용[cite: 7]
-      const terms = keyword.split(' ');
-      const searchVal = terms[terms.length - 1];
+      // 주소 파싱 로직 롤백: 띄어쓰기 포함 전체 검색어 사용
+      const searchVal = keyword.trim();
 
       const res = await residentialService.searchDirectory({
-        sigungu: searchVal,
+        keyword: searchVal, // sigungu 대신 keyword로 전달 (백엔드 매핑 필요)
         propertyType: inputs.propertyType,
         page: 0, size: 10
       });
@@ -96,9 +95,9 @@ const ResidentialPredictPage = () => {
                       "지역 정보 없음";
 
       const autoFillData = {
-        sigungu: d.sigungu || d.SIGUNGU || `${d.SIDO} ${d.SIGUNGU}`.trim(),
+        sigungu: d.sigungu || d.SIGUNGU || (d.roadAddress ? d.roadAddress.split(' ').slice(0, 2).join(' ') : "서울특별시 은평구"),
         propertyType: d.propertyType || d.PROPERTY_TYPE || '아파트',
-        dealType: inputs.dealType, // 현재 유저가 선택한 거래타입 유지
+        dealType: inputs.dealType,
         area: d.area || d.AREA || '',
         floor: d.floor || d.FLOOR_NO || '10',
         builtYear: d.builtYear || d.BUILT_YEAR || '2020',
@@ -138,29 +137,32 @@ const ResidentialPredictPage = () => {
     : `${data.province || ''} ${data.city || ''}`.trim() || "지역 정보 없음";
 
     try {
-      // 🚨 가이드 준수: 월세는 h1m, h3m만 실행. 매매/전세는 h1m, h3m, h6m 실행[cite: 5]
-      let months = [];
-      if (isAuto) {
-        months = data.dealType === '월세' ? ['h1m', 'h3m'] : ['h1m', 'h3m', 'h6m'];
-      } else {
-        months = [data.targetMonth];
-      }
+      // 🚨 가이드 준수: 월세는 h1m, h3m만 실행. 매매/전세는 h1m, h3m, h6m 실행
+      // [수정] 수동 예측(버튼 클릭) 시에도 그래프가 끊기지 않도록 전체 기간을 항상 호출합니다.
+      const months = data.dealType === '월세' ? ['h1m', 'h3m'] : ['h1m', 'h3m', 'h6m'];
 
       // 루프를 돌며 개별 targetMonth 요청 생성[cite: 5]
-      const requests = months.map(m => 
-        residentialService.predict({
+      const requests = months.map(m => {
+        // 💡 [AI 규격 준수] AI 서버는 sido, mean_building_age 등의 이름을 기다립니다.
+        const sido = validSigungu.split(' ')[0] || "서울특별시";
+        const currentYear = new Date().getFullYear();
+        const buildingAge = currentYear - (parseInt(data.builtYear) || 2020);
+
+        return residentialService.predict({
           propertyType: data.propertyType,
           dealType: data.dealType,
           sigungu: validSigungu,
-          targetMonth: m, // 🚨 고정: CamelCase 규격 준수[cite: 1, 5]
-          houseId: isAuto ? data.houseId : null, // 수동 시 null[cite: 5]
+          targetMonth: m,
           features: [{
-            area: parseFloat(data.area),
-            builtYear: parseInt(data.builtYear),
-            floor: parseInt(data.floor) || 10
+            month: new Date().getMonth() + 1,
+            sido: sido,
+            property_type: data.propertyType,
+            mean_building_age: buildingAge,
+            mean_floor: parseInt(data.floor) || 10,
+            mean_area: parseFloat(data.area) || 84.0
           }]
-        })
-      );
+        });
+      });
 
       const responses = await Promise.all(requests);
       
@@ -187,9 +189,18 @@ const ResidentialPredictPage = () => {
     // 시계열 레이블 설정[cite: 7]
     const labels = ['현재 시세', ...keys.map(k => k.replace('h', '').replace('m', '개월 후'))];
     
-    // 첫 번째 결과에서 기준 실거래가 추출
-    const basePrice = inputs.currentPrice || 0;
+    // [수정] 첫 번째 결과에서 기준 실거래가 추출 (없을 경우 로켓 발사 방지를 위해 1개월 예측가에서 살짝 뺀 값으로 역산)
     const predictedPrices = keys.map(k => multiResults[k].predictedPrice);
+    
+    let basePrice = inputs.currentPrice;
+    if (!basePrice || basePrice === 0) {
+      if (predictedPrices.length > 0 && predictedPrices[0]) {
+        // 기준가가 없으면 1개월 후 예측가의 99% 수준을 현재가로 가상 설정 (바닥에서 시작 방지)
+        basePrice = Math.round(predictedPrices[0] * 0.99);
+      } else {
+        basePrice = 0;
+      }
+    }
 
     return {
       labels,
@@ -309,7 +320,7 @@ const ResidentialPredictPage = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                 {sidebarData.liked.map((item, i) => (
                   <div key={i} onClick={() => handleSelectProperty(item)} className="p-3 bg-slate-900 rounded-xl cursor-pointer hover:ring-1 hover:ring-blue-500 transition-all">
-                    <p className="text-[11px] font-bold truncate">{item.complexName || item.NAME}</p>
+                    <p className="text-[11px] font-bold truncate">{item.complexName || item.name || "이름 없는 매물"}</p>
                     <p className="text-[9px] text-slate-500 italic">클릭 시 자동 예측</p>
                   </div>
                 ))}
@@ -320,7 +331,7 @@ const ResidentialPredictPage = () => {
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                 {sidebarData.recent.map((item, i) => (
                   <div key={i} onClick={() => handleSelectProperty(item)} className="p-3 bg-slate-900 rounded-xl cursor-pointer hover:ring-1 hover:ring-slate-500 transition-all">
-                    <p className="text-[11px] font-bold truncate">{item.complexName || item.NAME}</p>
+                    <p className="text-[11px] font-bold truncate">{item.complexName || item.name || "이름 없는 매물"}</p>
                     <p className="text-[9px] text-slate-500 italic">정보 불러오기</p>
                   </div>
                 ))}
