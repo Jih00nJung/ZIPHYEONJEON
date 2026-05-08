@@ -12,7 +12,9 @@ import Navbar from './context/layout/Navbar'; // 상단 네비게이션
 // [페이지 컴포넌트 임포트]
 import AuthPage from './pages/AuthPage'; // 로그인/회원가입
 import MainPage from './pages/MainPage'; // 메인 대시보드
-import CommercialSearchPage from './pages/CommercialSearchPage'; // 상가 검색
+import CommercialRentPage from './pages/commercial/CommercialRentPage'; // 상가 임대료 조회
+import PopulationAnalysisPage from './pages/commercial/PopulationAnalysisPage'; // 유동인구 분석
+import IndustryAnalysisPage from './pages/commercial/IndustryAnalysisPage'; // 지역별 업황 분석
 import CustomerServicePage from './pages/CustomerServicePage'; // AI 챗봇 및 고객센터
 import MyPage from './pages/MyPage'; // 마이페이지 (AI 분석 이력 포함)
 
@@ -82,8 +84,14 @@ function App() {
                         } />
                         
                         {/* 🏢 상가 섹션: 유동인구 및 지역 업황 분석 포함 */}
-                        <Route path="/search/commercial" element={
-                            <ProtectedRoute><CommercialSearchPage /></ProtectedRoute>
+                        <Route path="/search/commercial/rent" element={
+                            <ProtectedRoute><CommercialRentPage /></ProtectedRoute>
+                        } />
+                        <Route path="/search/commercial/population" element={
+                            <ProtectedRoute><PopulationAnalysisPage /></ProtectedRoute>
+                        } />
+                        <Route path="/search/commercial/industry" element={
+                            <ProtectedRoute><IndustryAnalysisPage /></ProtectedRoute>
                         } />
                         
                         {/* 🛠 서비스 및 개인화 영역 */}

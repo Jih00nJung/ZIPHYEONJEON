@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const updateAuthState = useCallback((token) => {
+    const updateAuthState = useCallback(async (token) => {
         if (token) {
             try {
                 const decoded = jwtDecode(token);
@@ -20,6 +20,16 @@ export const AuthProvider = ({ children }) => {
                     ...decoded
                 });
                 setIsAuthenticated(true);
+                
+                try {
+                    const response = await apiClient.get('/api/auth/me');
+                    setUser(prev => ({
+                        ...prev,
+                        ...response.data
+                    }));
+                } catch (profileError) {
+                    console.error("[Auth] Failed to fetch user profile:", profileError);
+                }
             } catch (error) {
                 console.error("[Auth] Session Token Invalid:", error);
                 sessionStorage.removeItem('accessToken');
@@ -36,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         const initAuth = async () => {
             const storedToken = sessionStorage.getItem('accessToken');
             if (storedToken) {
-                updateAuthState(storedToken);
+                await updateAuthState(storedToken);
             }
             setIsLoading(false);
         };
@@ -67,7 +77,7 @@ export const AuthProvider = ({ children }) => {
             const { accessToken } = response.data;
 
             sessionStorage.setItem('accessToken', accessToken);
-            updateAuthState(accessToken);
+            await updateAuthState(accessToken);
             return { success: true };
         } catch (error) {
             return {

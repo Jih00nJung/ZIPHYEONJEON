@@ -23,11 +23,11 @@ const Navbar = () => {
     const navConfig = [
         {
             title: "상가검색",
-            path: "/search/commercial",
+            path: "/search/commercial/population",
             subMenus: [
-                { name: "임대료 조회", path: "/search/commercial" },
-                { name: "유동인구 분석", path: "/search/commercial" },
-                { name: "지역별 업황", path: "/search/commercial" }
+                { name: "임대료 조회", path: "/search/commercial/rent" },
+                { name: "유동인구 분석", path: "/search/commercial/population" },
+                { name: "지역별 업황", path: "/search/commercial/industry" }
             ]
         },
         {
