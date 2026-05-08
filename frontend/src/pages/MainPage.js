@@ -24,7 +24,7 @@ const MainPage = () => {
             title: '상가검색',
             desc: '지역별 임대료 조회, 유동인구 분석 및 업황 리포트',
             icon: '🏢',
-            path: '/search/commercial',
+            path: '/search/commercial/population',
             color: 'border-blue-100 bg-blue-50/30'
         },
         {
@@ -87,7 +87,7 @@ const MainPage = () => {
                         
                         {/* 사용자 인사말 */}
                         <p className="mt-8 text-slate-400 font-bold ml-4">
-                            환영합니다, <span className="text-slate-800">{user?.nickname || '사용자'}</span> 님. 무엇을 분석해 드릴까요?
+                            환영합니다, <span className="text-slate-800">{user?.userName || '사용자'}</span> 님. 무엇을 분석해 드릴까요?
                         </p>
                     </div>
                 </div>
