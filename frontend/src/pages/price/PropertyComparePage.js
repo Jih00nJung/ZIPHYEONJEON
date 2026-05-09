@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../../api/apiClient';
+import { interactionService } from '../../api/interaction/interactionService';
+import priceService from '../../api/price/priceService';
 
 const PropertyComparePage = () => {
     const [targets, setTargets] = useState([
@@ -8,6 +10,60 @@ const PropertyComparePage = () => {
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState([]);
+    const [quickTags, setQuickTags] = useState({ liked: [], recent: [] });
+
+    useEffect(() => {
+        const fetchQuickTags = async () => {
+            try {
+                const [likes, records] = await Promise.all([
+                    interactionService.getLikedHouses(),
+                    interactionService.getRecentRecords()
+                ]);
+                
+                const extract = (res) => res.data?.data || res.data || (Array.isArray(res) ? res : []);
+                
+                setQuickTags({
+                    liked: extract(likes).slice(0, 3),
+                    recent: extract(records).slice(0, 3)
+                });
+            } catch (err) {
+                console.error("퀵 태그 데이터 로딩 실패:", err);
+            }
+        };
+        fetchQuickTags();
+    }, []);
+
+    const handleSelectQuickTag = async (item) => {
+        const hId = item.representativeHouseId || item.HOUSE_ID || item.houseId;
+        if (!hId) return;
+
+        try {
+            const d = await priceService.getPropertyProfile(hId);
+            
+            const emptyIdx = targets.findIndex(t => !t.address && !t.area_m2);
+            
+            const newData = {
+                address: d.sigungu || d.SIGUNGU || d.roadAddress || '',
+                area_m2: d.area || d.AREA || '',
+                transaction_type: d.propertyType || d.PROPERTY_TYPE || '아파트',
+                targetPrice: ''
+            };
+
+            if (emptyIdx !== -1) {
+                const newTargets = [...targets];
+                newTargets[emptyIdx] = newData;
+                setTargets(newTargets);
+            } else if (targets.length < 5) {
+                setTargets([...targets, newData]);
+            } else {
+                alert("최대 5개까지만 비교할 수 있습니다. 기존 대상을 삭제하거나 수정해주세요.");
+            }
+        } catch (error) {
+            console.error("매물 상세 정보 조회 실패:", error);
+            alert("매물 정보를 불러오는데 실패했습니다.");
+        }
+    };
+
 
     const handleAddTarget = () => {
         if (targets.length >= 5) {
@@ -73,6 +129,37 @@ const PropertyComparePage = () => {
                     <h2 className="text-xl font-black text-slate-800">비교 대상 설정 (최대 5개)</h2>
                     <button onClick={handleAddTarget} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold hover:bg-blue-100 transition-all text-xs">+ 대상 추가</button>
                 </div>
+                
+                {/* 퀵 태그 섹션 */}
+                {(quickTags.liked.length > 0 || quickTags.recent.length > 0) && (
+                    <div className="mb-6 flex flex-wrap gap-2 items-center bg-slate-50 p-4 rounded-2xl">
+                        <span className="text-xs font-black text-slate-500 uppercase mr-2">빠른 추가:</span>
+                        
+                        {/* 찜한 매물 */}
+                        {quickTags.liked.map((item, idx) => (
+                            <button 
+                                key={`like-${idx}`}
+                                onClick={() => handleSelectQuickTag(item)}
+                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                            >
+                                <span className="text-rose-400">❤️</span>
+                                {item.complexName || item.name || "이름 없음"}
+                            </button>
+                        ))}
+                        
+                        {/* 최근 본 매물 */}
+                        {quickTags.recent.map((item, idx) => (
+                            <button 
+                                key={`recent-${idx}`}
+                                onClick={() => handleSelectQuickTag(item)}
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
+                            >
+                                <span className="text-blue-400">🕒</span>
+                                {item.complexName || item.name || "이름 없음"}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 
                 <div className="space-y-4">
                     {targets.map((target, idx) => (
