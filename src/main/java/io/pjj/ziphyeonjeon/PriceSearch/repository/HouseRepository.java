@@ -166,4 +166,33 @@ public interface HouseRepository extends JpaRepository<House, Long> {
             @Param("keyword") String keyword,
             @Param("propertyType") String propertyType,
             Pageable pageable);
+
+    // [STRICT OPTIMIZED] 매물 비교 전용 고속 평균가 조회 (인덱스 강제 활용)
+    @Query("SELECT AVG(h.trade) FROM House h " +
+            "WHERE h.sido = :sido " +
+            "AND h.sigungu = :sigungu " +
+            "AND h.emd = :dong " +
+            "AND h.area BETWEEN :minArea AND :maxArea " +
+            "AND (:propertyType IS NULL OR h.propertyType = :propertyType) " +
+            "AND h.dealType = '매매'")
+    Double findAverageTradeStrict(@Param("sido") String sido,
+                                  @Param("sigungu") String sigungu,
+                                  @Param("dong") String dong,
+                                  @Param("minArea") BigDecimal minArea,
+                                  @Param("maxArea") BigDecimal maxArea,
+                                  @Param("propertyType") String propertyType);
+
+    @Query("SELECT AVG(h.deposit) FROM House h " +
+            "WHERE h.sido = :sido " +
+            "AND h.sigungu = :sigungu " +
+            "AND h.emd = :dong " +
+            "AND h.area BETWEEN :minArea AND :maxArea " +
+            "AND (:propertyType IS NULL OR h.propertyType = :propertyType) " +
+            "AND h.dealType = '전세'")
+    Double findAverageDepositStrict(@Param("sido") String sido,
+                                    @Param("sigungu") String sigungu,
+                                    @Param("dong") String dong,
+                                    @Param("minArea") BigDecimal minArea,
+                                    @Param("maxArea") BigDecimal maxArea,
+                                    @Param("propertyType") String propertyType);
 }

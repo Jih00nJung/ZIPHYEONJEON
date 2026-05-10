@@ -1,16 +1,15 @@
 /**
  * [Residential AI Prediction Service - Final Integrated]
- * 백엔드 소스(Source 1-3) 및 지침서(Source 4-5) 완벽 준수
+ * 백엔드 API 규격 완벽 준수
  */
 import apiClient from '../apiClient'; 
 
 export const residentialService = {
     /**
-     * [P-008] 실시간 집값 예측 요청 (단일 호출)
+     * [P-008] 실시간 집값 예측 요청
      */
     predict: async (payload) => {
         try {
-            // 주의: target_month가 아닌 targetMonth를 사용해야 함
             const response = await apiClient.post('/api/v1/ai/predict', payload);
             return response.data;
         } catch (error) {
@@ -21,7 +20,6 @@ export const residentialService = {
 
     /**
      * [P-011] 마이페이지 AI 분석 기록 조회
-     * 협업 가이드(Source 5)에 따라 /predict/me를 기본으로 사용
      */
     getHistory: async () => {
         try {
@@ -34,10 +32,41 @@ export const residentialService = {
     },
 
     /**
-     * 특정 매물의 종합 프로필 조회
+     * 특정 매물의 종합 프로필 조회 (느림)
      */
     getPropertyProfile: async (houseId) => {
-        const response = await apiClient.get(`/api/price/profile/${houseId}`);
-        return response.data;
+        try {
+            const response = await apiClient.get(`/api/price/profile/${houseId}`);
+            return response.data;
+        } catch (error) {
+            console.error("종합 프로필 조회 에러:", error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    /**
+     * [P-009] 단지/도로명 검색 API
+     */
+    searchDirectory: async (filter) => {
+        try {
+            const response = await apiClient.post('/api/price/directory', filter);
+            return response.data;
+        } catch (error) {
+            console.error("단지 검색 API 에러:", error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    /**
+     * [P-010-S] 매물 입력용 경량 프로필 조회 (빠름)
+     */
+    getSimplifiedProfile: async (houseId) => {
+        try {
+            const response = await apiClient.get(`/api/price/profile/${houseId}/simple`);
+            return response.data;
+        } catch (error) {
+            console.error("경량 프로필 조회 에러:", error.response?.data || error.message);
+            throw error;
+        }
     }
 };
