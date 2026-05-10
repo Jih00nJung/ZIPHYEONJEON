@@ -193,6 +193,15 @@ export const priceService = {
     getPropertyProfile: async (houseId) => {
         const response = await apiClient.get(`/api/price/profile/${houseId}`);
         return response.data;
+    },
+
+    /**
+     * [P-010-S] 매물 비교 페이지용 경량 프로필 조회
+     * @description AI 분석 등 무거운 로직을 제외하고 기본 정보만 빠르게 조회합니다.
+     */
+    getSimplifiedProfile: async (houseId) => {
+        const response = await apiClient.get(`/api/price/profile/${houseId}/simple`);
+        return response.data;
     }
 };
 

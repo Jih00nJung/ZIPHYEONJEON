@@ -34,20 +34,33 @@ const PropertyComparePage = () => {
     }, []);
 
     const handleSelectQuickTag = async (item) => {
-        const hId = item.representativeHouseId || item.HOUSE_ID || item.houseId;
+        const base = item.house || item;
+        const hId = base.representativeHouseId || base.HOUSE_ID || base.houseId;
         if (!hId) return;
 
+        // 1. 중복 확인
+        const isAlreadyAdded = targets.some(t => t.houseId === hId);
+        if (isAlreadyAdded) {
+            alert("이미 선택된 매물입니다.");
+            return;
+        }
+
         try {
-            const d = await priceService.getPropertyProfile(hId);
-            
-            const emptyIdx = targets.findIndex(t => !t.address && !t.area_m2);
+            // 2. [성능 최적화] 경량화된 API를 사용하여 실제 주소와 면적 정보를 신속하게 조회
+            const d = await priceService.getSimplifiedProfile(hId);
             
             const newData = {
-                address: d.sigungu || d.SIGUNGU || d.roadAddress || '',
-                area_m2: d.area || d.AREA || '',
+                houseId: hId,
+                // [보정] 건물 이름 대신 실제 분석 가능한 '도로명 주소' 입력
+                address: d.roadAddress || d.address || base.roadAddress || base.address || '',
+                // [보정] 기본값 84 대신 서버에 저장된 '실제 전용면적' 입력
+                area_m2: d.area || d.AREA || base.area || 84,
                 transaction_type: d.propertyType || d.PROPERTY_TYPE || '아파트',
-                targetPrice: ''
+                targetPrice: '' 
             };
+
+            // 3. 순차적으로 빈 슬롯 찾기
+            const emptyIdx = targets.findIndex(t => !t.address);
 
             if (emptyIdx !== -1) {
                 const newTargets = [...targets];
@@ -56,11 +69,24 @@ const PropertyComparePage = () => {
             } else if (targets.length < 5) {
                 setTargets([...targets, newData]);
             } else {
-                alert("최대 5개까지만 비교할 수 있습니다. 기존 대상을 삭제하거나 수정해주세요.");
+                alert("최대 5개까지만 비교할 수 있습니다.");
             }
         } catch (error) {
-            console.error("매물 상세 정보 조회 실패:", error);
-            alert("매물 정보를 불러오는데 실패했습니다.");
+            console.error("매물 정보 상세 조회 실패:", error);
+            // 실패 시 기본 데이터라도 입력
+            const fallbackData = {
+                houseId: hId,
+                address: base.roadAddress || base.address || '',
+                area_m2: base.area || 84,
+                transaction_type: '아파트',
+                targetPrice: ''
+            };
+            const emptyIdx = targets.findIndex(t => !t.address);
+            if (emptyIdx !== -1) {
+                const newTargets = [...targets];
+                newTargets[emptyIdx] = fallbackData;
+                setTargets(newTargets);
+            }
         }
     };
 
@@ -130,36 +156,66 @@ const PropertyComparePage = () => {
                     <button onClick={handleAddTarget} className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl font-bold hover:bg-blue-100 transition-all text-xs">+ 대상 추가</button>
                 </div>
                 
-                {/* 퀵 태그 섹션 */}
-                {(quickTags.liked.length > 0 || quickTags.recent.length > 0) && (
-                    <div className="mb-6 flex flex-wrap gap-2 items-center bg-slate-50 p-4 rounded-2xl">
-                        <span className="text-xs font-black text-slate-500 uppercase mr-2">빠른 추가:</span>
-                        
-                        {/* 찜한 매물 */}
-                        {quickTags.liked.map((item, idx) => (
-                            <button 
-                                key={`like-${idx}`}
-                                onClick={() => handleSelectQuickTag(item)}
-                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
-                            >
-                                <span className="text-rose-400">❤️</span>
-                                {item.complexName || item.name || "이름 없음"}
-                            </button>
-                        ))}
-                        
-                        {/* 최근 본 매물 */}
-                        {quickTags.recent.map((item, idx) => (
-                            <button 
-                                key={`recent-${idx}`}
-                                onClick={() => handleSelectQuickTag(item)}
-                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
-                            >
-                                <span className="text-blue-400">🕒</span>
-                                {item.complexName || item.name || "이름 없음"}
-                            </button>
-                        ))}
+                {/* 퀵 태그 섹션: 찜 매물과 최근 기록 분리 */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                    {/* 찜한 매물 섹션 */}
+                    <div className="bg-gradient-to-br from-rose-50/80 to-white p-6 rounded-[32px] border border-rose-100 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-rose-200/10 rounded-bl-[80px] -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                        <div className="flex items-center gap-3 mb-5 relative z-10">
+                            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-rose-500 shadow-sm font-black border border-rose-50">❤️</div>
+                            <div>
+                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.2em] block">My Favorites</span>
+                                <span className="text-sm font-black text-slate-700">찜한 매물</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2 relative z-10">
+                            {quickTags.liked.length > 0 ? (
+                                quickTags.liked.map((item, idx) => (
+                                    <button 
+                                        key={`like-${idx}`}
+                                        onClick={() => handleSelectQuickTag(item)}
+                                        className="px-4 py-2.5 bg-white hover:bg-rose-500 hover:text-white text-rose-600 rounded-2xl text-[11px] font-black transition-all shadow-sm border border-rose-100 active:scale-95 flex items-center gap-2"
+                                    >
+                                        {item.complexName || item.name || "이름 없음"}
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="w-full py-4 text-center border-2 border-dashed border-rose-100 rounded-2xl">
+                                    <p className="text-[11px] text-rose-300 font-bold">찜한 매물이 아직 없습니다.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    {/* 최근 본 매물 섹션 */}
+                    <div className="bg-gradient-to-br from-blue-50/80 to-white p-6 rounded-[32px] border border-blue-100 shadow-sm relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-200/10 rounded-bl-[80px] -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+                        <div className="flex items-center gap-3 mb-5 relative z-10">
+                            <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-blue-500 shadow-sm font-black border border-blue-50">🕒</div>
+                            <div>
+                                <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] block">Recently Viewed</span>
+                                <span className="text-sm font-black text-slate-700">최근 본 매물</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2 relative z-10">
+                            {quickTags.recent.length > 0 ? (
+                                quickTags.recent.map((item, idx) => (
+                                    <button 
+                                        key={`recent-${idx}`}
+                                        onClick={() => handleSelectQuickTag(item)}
+                                        className="px-4 py-2.5 bg-white hover:bg-blue-500 hover:text-white text-blue-600 rounded-2xl text-[11px] font-black transition-all shadow-sm border border-blue-100 active:scale-95 flex items-center gap-2"
+                                    >
+                                        {item.complexName || item.name || "이름 없음"}
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="w-full py-4 text-center border-2 border-dashed border-blue-100 rounded-2xl">
+                                    <p className="text-[11px] text-blue-300 font-bold">최근 열람 기록이 없습니다.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
                 
                 <div className="space-y-4">
                     {targets.map((target, idx) => (
@@ -180,7 +236,12 @@ const PropertyComparePage = () => {
                                 <input value={target.address} onChange={e => handleTargetChange(idx, 'address', e.target.value)} placeholder="예: 서울특별시 동작구 상도동" className="w-full bg-white p-3 rounded-xl font-bold border-none text-sm shadow-sm focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div className="w-full md:w-1/4">
-                                <label className="text-[9px] font-black text-blue-600 uppercase ml-2">Area (㎡)</label>
+                                <div className="flex justify-between items-center ml-2">
+                                    <label className="text-[9px] font-black text-blue-600 uppercase">Area (㎡)</label>
+                                    {target.area_m2 && (
+                                        <span className="text-[9px] font-black text-slate-400">≈ {(target.area_m2 * 0.3025).toFixed(1)}평</span>
+                                    )}
+                                </div>
                                 <input type="number" value={target.area_m2} onChange={e => handleTargetChange(idx, 'area_m2', e.target.value)} placeholder="84" className="w-full bg-white p-3 rounded-xl font-bold border-none text-sm shadow-sm focus:ring-2 focus:ring-blue-500" />
                             </div>
                             <div className="w-full md:w-1/4">
@@ -221,7 +282,10 @@ const PropertyComparePage = () => {
                                         <span className="text-[10px] font-bold text-slate-400">{res.propertyType}</span>
                                     </div>
                                     <h3 className="font-black text-slate-800 text-sm mb-1 leading-snug h-10 overflow-hidden">{res.address}</h3>
-                                    <p className="text-xs font-bold text-slate-500 mb-6">{res.exclusiveArea}㎡</p>
+                                    <p className="text-xs font-bold text-slate-500 mb-6">
+                                        {res.exclusiveArea}㎡ 
+                                        <span className="ml-1 text-slate-400 font-medium">({(res.exclusiveArea * 0.3025).toFixed(1)}평)</span>
+                                    </p>
                                     
                                     <div className="space-y-4">
                                         <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-100">

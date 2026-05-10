@@ -78,7 +78,18 @@ public class InteractionController {
             .map(like -> {
                 InteractionItemDto dto = new InteractionItemDto();
                 dto.setHouseId(like.getHouseId());
-                dto.setComplexName(like.getName()); // name -> complexName (프론트 매핑)
+                
+                String name = like.getName();
+                // LIKES 테이블에 이름이 없으면 HOUSE 테이블에서 조회하여 보완
+                if ((name == null || name.trim().isEmpty()) && like.getHouseId() != null) {
+                    name = houseRepository.findById(like.getHouseId())
+                        .map(house -> {
+                            String hName = house.getName();
+                            return (hName != null && !hName.trim().isEmpty()) ? hName : house.getRoadname();
+                        }).orElse("이름 없음");
+                }
+                
+                dto.setComplexName(name); // name -> complexName (프론트 매핑)
                 return dto;
             }).collect(Collectors.toList());
             
@@ -116,14 +127,16 @@ public class InteractionController {
                 InteractionItemDto dto = new InteractionItemDto();
                 dto.setHouseId(record.getHouseId());
                 
-                // houseId로 매물 정보를 조회하여 이름 채우기
-                houseRepository.findById(record.getHouseId()).ifPresent(house -> {
-                    String name = house.getName();
-                    if (name == null || name.trim().isEmpty()) {
-                        name = house.getRoadname(); // 빌라 등은 도로명 사용
-                    }
-                    dto.setComplexName(name);
-                });
+                // houseId가 존재할 때만 매물 정보를 조회하여 이름 채우기
+                if (record.getHouseId() != null) {
+                    houseRepository.findById(record.getHouseId()).ifPresent(house -> {
+                        String name = house.getName();
+                        if (name == null || name.trim().isEmpty()) {
+                            name = house.getRoadname(); // 빌라 등은 도로명 사용
+                        }
+                        dto.setComplexName(name);
+                    });
+                }
                 
                 return dto;
             }).collect(Collectors.toList());

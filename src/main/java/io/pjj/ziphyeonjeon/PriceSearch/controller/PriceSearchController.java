@@ -121,4 +121,11 @@ public class PriceSearchController {
             @org.springframework.web.bind.annotation.PathVariable Long houseId) {
         return priceSearchService.getPropertyProfile(houseId);
     }
+
+    // P-010-S: 매물 비교 페이지용 경량 프로필 조회
+    @GetMapping("/profile/{houseId}/simple")
+    public io.pjj.ziphyeonjeon.PriceSearch.dto.response.PropertyProfileResponse getSimplifiedProfile(
+            @org.springframework.web.bind.annotation.PathVariable Long houseId) {
+        return priceSearchService.getSimplifiedProfile(houseId);
+    }
 }
