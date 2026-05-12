@@ -29,26 +29,40 @@ public class IndustryRepositoryImpl implements IndustryRepositoryCustom {
             ps.setString(5, industry.getSvcIndutyCd());
             ps.setString(6, industry.getSvcIndutyNm());
 
-            if (industry.getShopCount() != null) ps.setInt(7, industry.getShopCount());
-            else ps.setNull(7, java.sql.Types.INTEGER);
+            if (industry.getShopCount() != null)
+                ps.setInt(7, industry.getShopCount());
+            else
+                ps.setNull(7, java.sql.Types.INTEGER);
 
-            if (industry.getSimilarIndutyShopCount() != null) ps.setInt(8, industry.getSimilarIndutyShopCount());
-            else ps.setNull(8, java.sql.Types.INTEGER);
+            if (industry.getSimilarIndutyShopCount() != null)
+                ps.setInt(8, industry.getSimilarIndutyShopCount());
+            else
+                ps.setNull(8, java.sql.Types.INTEGER);
 
-            if (industry.getOpbizRt() != null) ps.setDouble(9, industry.getOpbizRt());
-            else ps.setNull(9, java.sql.Types.DOUBLE);
+            if (industry.getOpbizRt() != null)
+                ps.setDouble(9, industry.getOpbizRt());
+            else
+                ps.setNull(9, java.sql.Types.DOUBLE);
 
-            if (industry.getOpbizShopCount() != null) ps.setInt(10, industry.getOpbizShopCount());
-            else ps.setNull(10, java.sql.Types.INTEGER);
+            if (industry.getOpbizShopCount() != null)
+                ps.setInt(10, industry.getOpbizShopCount());
+            else
+                ps.setNull(10, java.sql.Types.INTEGER);
 
-            if (industry.getClsbizRt() != null) ps.setDouble(11, industry.getClsbizRt());
-            else ps.setNull(11, java.sql.Types.DOUBLE);
+            if (industry.getClsbizRt() != null)
+                ps.setDouble(11, industry.getClsbizRt());
+            else
+                ps.setNull(11, java.sql.Types.DOUBLE);
 
-            if (industry.getClsbizShopCount() != null) ps.setInt(12, industry.getClsbizShopCount());
-            else ps.setNull(12, java.sql.Types.INTEGER);
+            if (industry.getClsbizShopCount() != null)
+                ps.setInt(12, industry.getClsbizShopCount());
+            else
+                ps.setNull(12, java.sql.Types.INTEGER);
 
-            if (industry.getFrcShopCount() != null) ps.setInt(13, industry.getFrcShopCount());
-            else ps.setNull(13, java.sql.Types.INTEGER);
+            if (industry.getFrcShopCount() != null)
+                ps.setInt(13, industry.getFrcShopCount());
+            else
+                ps.setNull(13, java.sql.Types.INTEGER);
         });
     }
 }

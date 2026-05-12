@@ -21,12 +21,16 @@ public class PopulationRepositoryImpl implements PopulationRepositoryCustom {
 
         jdbcTemplate.batchUpdate(sql, populations, 5000, (PreparedStatement ps, Population population) -> {
             ps.setTimestamp(1, population.getReferenceDate());
-            if (population.getHours() != null) ps.setInt(2, population.getHours());
-            else ps.setNull(2, java.sql.Types.INTEGER);
-            
-            if (population.getPopulationCount() != null) ps.setDouble(3, population.getPopulationCount());
-            else ps.setNull(3, java.sql.Types.DOUBLE);
-            
+            if (population.getHours() != null)
+                ps.setInt(2, population.getHours());
+            else
+                ps.setNull(2, java.sql.Types.INTEGER);
+
+            if (population.getPopulationCount() != null)
+                ps.setDouble(3, population.getPopulationCount());
+            else
+                ps.setNull(3, java.sql.Types.DOUBLE);
+
             ps.setString(4, population.getSido());
             ps.setString(5, population.getSigungu());
             ps.setString(6, population.getAdstrdCd());
