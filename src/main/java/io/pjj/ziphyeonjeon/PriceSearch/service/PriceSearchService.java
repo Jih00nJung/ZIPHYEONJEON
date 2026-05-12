@@ -219,7 +219,7 @@ public class PriceSearchService {
             String t1 = tokens[1];
             if ((t0.endsWith("도") || t0.endsWith("시") || t0.endsWith("특별자치도")) &&
                     (t1.endsWith("구") || t1.endsWith("시") || t1.endsWith("군"))) {
-                return t0 + " " + t1;
+                return t1; // 시도(서울특별시) 제외하고 시군구(동작구)만 반환하여 DB 매칭 확률 상향
             }
         }
         if (tokens.length >= 1) {
@@ -248,27 +248,25 @@ public class PriceSearchService {
     }
 
     private String parseSigungu(String roadAddr, String jibunAddr, String rawAddress) {
-        String result = extractSigunguToken(jibunAddr);
+        String result = extractSigunguToken(roadAddr);
         if (result != null)
             return result;
-
-        result = extractSigunguToken(roadAddr);
+        result = extractSigunguToken(jibunAddr);
         if (result != null)
             return result;
+        return parseSigungu(rawAddress);
+    }
 
-        result = extractSigunguToken(rawAddress);
-        if (result != null)
-            return result;
-
-        String fallback = jibunAddr != null ? jibunAddr : (roadAddr != null ? roadAddr : rawAddress);
-        if (fallback != null) {
-            String[] tokens = fallback.split(" ");
-            if (tokens.length >= 2) {
-                return tokens[0] + " " + tokens[1];
+    private String parseDong(String addr) {
+        if (addr == null)
+            return "";
+        String[] tokens = addr.split(" ");
+        for (String token : tokens) {
+            if (token.endsWith("동") || token.endsWith("읍") || token.endsWith("면")) {
+                return token;
             }
-            return fallback;
         }
-        return null;
+        return "";
     }
 
     private String parseRoadName(String roadAddr) {
@@ -319,75 +317,105 @@ public class PriceSearchService {
                 .build();
     }
 
-    // --- P-004: 매물 시세 비교 ---
+    // --- P-004: 매물 시세 비교 (비동기 병렬 최적화 버전) ---
     public java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse> comparePrices(
             io.pjj.ziphyeonjeon.PriceSearch.dto.request.PriceCompareRequest request) {
-        java.util.List<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse> responses = new java.util.ArrayList<>();
 
+        // 1. 유효성 검사
         if (request.getTargets() == null || request.getTargets().size() < 2 || request.getTargets().size() > 10) {
             throw new IllegalArgumentException("비교할 매물은 2개 이상 10개 이하이어야 합니다.");
         }
 
-        for (io.pjj.ziphyeonjeon.PriceSearch.dto.request.PriceCompareRequest.TargetItem item : request.getTargets()) {
-            Double avgPrice = 0.0;
-            String address = item.getAddress(); // "서울 강남구 역삼동" (지번 기준 가정)
-            String sigungu = parseSigungu(address); // "서울특별시 강남구"
-            String dong = parseJibunDong(address); // "역삼동"
-            java.math.BigDecimal area = item.getArea_m2(); // spec: area_m2
-            java.math.BigDecimal minArea = area.subtract(new java.math.BigDecimal("10")); // -10m2
-            java.math.BigDecimal maxArea = area.add(new java.math.BigDecimal("10")); // +10m2
+        // 2. 각 매물 분석 작업을 비동기(CompletableFuture) 리스트로 생성
+        // 루프를 돌며 순차 실행하던 방식을 병렬 실행으로 전환하여 N+1 병목 해소
+        java.util.List<java.util.concurrent.CompletableFuture<io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse>> futures = request
+                .getTargets().stream()
+                .map(item -> java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    try {
+                        // 각 타겟별 독립 분석 수행
+                        return processSingleCompareTarget(item);
+                    } catch (Exception e) {
+                        log.error("매물 비교 중 개별 타겟 분석 실패: {}", item.getAddress(), e);
+                        // 실패 시 기본 데이터 반환 (전체 프로세스 중단 방지)
+                        return io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse.builder()
+                                .address(item.getAddress())
+                                .analysisMessage("데이터 조회 중 오류 발생")
+                                .build();
+                    }
+                }))
+                .collect(java.util.stream.Collectors.toList());
 
-            // 전용면적이 음수면 0으로 보정
-            if (minArea.compareTo(java.math.BigDecimal.ZERO) < 0)
-                minArea = java.math.BigDecimal.ZERO;
+        // 3. 모든 병렬 작업이 완료될 때까지 대기하여 결과 취합
+        return futures.stream()
+                .map(java.util.concurrent.CompletableFuture::join)
+                .collect(java.util.stream.Collectors.toList());
+    }
 
-            if (sigungu != null && dong != null) {
-                String propertyType = null;
-                String type = item.getTransaction_type();
-                if (type != null) {
-                    if (type.contains("아파트"))
-                        propertyType = "아파트";
-                    else if (type.contains("연립") || type.contains("다세대") || type.contains("빌라"))
-                        propertyType = "연립다세대";
-                    else if (type.contains("오피스텔"))
-                        propertyType = "오피스텔";
-                }
-                avgPrice = houseRepo.findAverageTrade(sigungu, dong, minArea, maxArea, propertyType);
+    /**
+     * [분리된 로직] 단일 매물에 대한 시세 분석 (다른 기능과 격리됨)
+     */
+    private io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse processSingleCompareTarget(
+            io.pjj.ziphyeonjeon.PriceSearch.dto.request.PriceCompareRequest.TargetItem item) {
+
+        Double avgPrice = 0.0;
+        String address = item.getAddress();
+        String sido = null;
+        String sigungu = null;
+
+        if (address != null) {
+            String[] tokens = address.split(" ");
+            if (tokens.length >= 2) {
+                sido = tokens[0];
+                sigungu = tokens[1];
             }
-
-            Long avgLong = (avgPrice != null) ? Math.round(avgPrice) : 0L;
-            Long arrDiff = (avgLong > 0) ? (item.getTargetPrice() - avgLong) : 0L;
-
-            Double percent = 0.0;
-            if (avgLong > 0) {
-                percent = (double) arrDiff / avgLong * 100.0;
-            }
-
-            String msg = "데이터 부족";
-            if (avgLong > 0) {
-                if (arrDiff > 0)
-                    msg = String.format("평균보다 약 %d만원 비쌉니다 (%.1f%%)", arrDiff, percent);
-                else if (arrDiff < 0)
-                    msg = String.format("평균보다 약 %d만원 저렴합니다 (%.1f%%)", Math.abs(arrDiff), Math.abs(percent));
-                else
-                    msg = "평균 시세와 동일합니다";
-            } else {
-                msg = "비교할 주변 시세 데이터가 부족합니다.";
-            }
-
-            responses.add(io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse.builder()
-                    .address(item.getAddress())
-                    .propertyType(item.getTransaction_type())
-                    .exclusiveArea(item.getArea_m2())
-                    .targetPrice(item.getTargetPrice())
-                    .averageMarketPrice(avgLong) // 0이면 데이터 없음
-                    .priceDiff(arrDiff)
-                    .diffPercent(percent)
-                    .analysisMessage(msg)
-                    .build());
         }
 
-        return responses;
+        String dong = parseJibunDong(address);
+        java.math.BigDecimal area = item.getArea_m2();
+
+        // [최적화] 검색 오차 범위를 ±10에서 ±5로 축소하여 DB 연산량 감소 (필요시 조정)
+        java.math.BigDecimal minArea = area.subtract(new java.math.BigDecimal("5"));
+        java.math.BigDecimal maxArea = area.add(new java.math.BigDecimal("5"));
+        if (minArea.compareTo(java.math.BigDecimal.ZERO) < 0)
+            minArea = java.math.BigDecimal.ZERO;
+
+        if (sido != null && sigungu != null && dong != null) {
+            String propertyType = null;
+            String type = item.getTransaction_type();
+            if (type != null) {
+                if (type.contains("아파트"))
+                    propertyType = "아파트";
+                else if (type.contains("연립") || type.contains("다세대") || type.contains("빌라"))
+                    propertyType = "연립다세대";
+                else if (type.contains("오피스텔"))
+                    propertyType = "오피스텔";
+            }
+
+            // 전용 쿼리 호출
+            avgPrice = houseRepo.findAverageTradeStrict(sido, sigungu, dong, minArea, maxArea, propertyType);
+        }
+
+        Long avgLong = (avgPrice != null) ? Math.round(avgPrice) : 0L;
+        Long arrDiff = (avgLong > 0) ? (item.getTargetPrice() - avgLong) : 0L;
+        Double percent = (avgLong > 0) ? (double) arrDiff / avgLong * 100.0 : 0.0;
+
+        String msg = (avgLong > 0)
+                ? (arrDiff > 0 ? String.format("평균보다 약 %d만원 비쌉니다 (%.1f%%)", arrDiff, percent)
+                        : (arrDiff < 0
+                                ? String.format("평균보다 약 %d만원 저렴합니다 (%.1f%%)", Math.abs(arrDiff), Math.abs(percent))
+                                : "평균 시세와 동일합니다"))
+                : "비교할 주변 시세 데이터가 부족합니다.";
+
+        return io.pjj.ziphyeonjeon.PriceSearch.dto.response.PriceCompareResponse.builder()
+                .address(item.getAddress())
+                .propertyType(item.getTransaction_type())
+                .exclusiveArea(item.getArea_m2())
+                .targetPrice(item.getTargetPrice())
+                .averageMarketPrice(avgLong)
+                .priceDiff(arrDiff)
+                .diffPercent(percent)
+                .analysisMessage(msg)
+                .build();
     }
 
     private String parseJibunDong(String jibunAddr) {
@@ -672,65 +700,65 @@ public class PriceSearchService {
 
     // --- P-003: 개별 공시지가 조회 (Spec 준수) ---
     public String searchLandPrice(io.pjj.ziphyeonjeon.PriceSearch.dto.request.OfficialLandPriceRequest request) {
-        // Spec: uninum_code(PNU), year
+        // Spec: uninum_code(PNU)
         if (request.getUninum_code() != null) {
             return vworldOfficialLandPriceClient.getOfficialLandPriceRaw(request.getUninum_code());
         }
         return "PNU Required";
     }
 
-    // --- P-007: 실거래가 다운로드 (CSV) ---
-    public org.springframework.core.io.Resource downloadTradeData(String sidoCode, String sigunguCode, String format) {
-        // 1. Code -> Name Mapping (서울 25개 구)
+    public org.springframework.core.io.Resource downloadTradeData(String sidoCode, String sigunguCode,
+            String propertyType, String dealType, String format, String year) {
+        // 1. Code -> Name Mapping (서울 25개 구) - DB에는 "강남구" 형식으로 저장됨
         java.util.Map<String, String> codeMap = new java.util.HashMap<>();
-        codeMap.put("11110", "서울특별시 종로구");
-        codeMap.put("11140", "서울특별시 중구");
-        codeMap.put("11170", "서울특별시 용산구");
-        codeMap.put("11200", "서울특별시 성동구");
-        codeMap.put("11215", "서울특별시 광진구");
-        codeMap.put("11230", "서울특별시 동대문구");
-        codeMap.put("11260", "서울특별시 중랑구");
-        codeMap.put("11290", "서울특별시 성북구");
-        codeMap.put("11305", "서울특별시 강북구");
-        codeMap.put("11320", "서울특별시 도봉구");
-        codeMap.put("11350", "서울특별시 노원구");
-        codeMap.put("11380", "서울특별시 은평구");
-        codeMap.put("11410", "서울특별시 서대문구");
-        codeMap.put("11440", "서울특별시 마포구");
-        codeMap.put("11470", "서울특별시 양천구");
-        codeMap.put("11500", "서울특별시 강서구");
-        codeMap.put("11530", "서울특별시 구로구");
-        codeMap.put("11545", "서울특별시 금천구");
-        codeMap.put("11560", "서울특별시 영등포구");
-        codeMap.put("11590", "서울특별시 동작구");
-        codeMap.put("11620", "서울특별시 관악구");
-        codeMap.put("11650", "서울특별시 서초구");
-        codeMap.put("11680", "서울특별시 강남구");
-        codeMap.put("11710", "서울특별시 송파구");
-        codeMap.put("11740", "서울특별시 강동구");
+        codeMap.put("11110", "종로구");
+        codeMap.put("11140", "중구");
+        codeMap.put("11170", "용산구");
+        codeMap.put("11200", "성동구");
+        codeMap.put("11215", "광진구");
+        codeMap.put("11230", "동대문구");
+        codeMap.put("11260", "중랑구");
+        codeMap.put("11290", "성북구");
+        codeMap.put("11305", "강북구");
+        codeMap.put("11320", "도봉구");
+        codeMap.put("11350", "노원구");
+        codeMap.put("11380", "은평구");
+        codeMap.put("11410", "서대문구");
+        codeMap.put("11440", "마포구");
+        codeMap.put("11470", "양천구");
+        codeMap.put("11500", "강서구");
+        codeMap.put("11530", "구로구");
+        codeMap.put("11545", "금천구");
+        codeMap.put("11560", "영등포구");
+        codeMap.put("11590", "동작구");
+        codeMap.put("11620", "관악구");
+        codeMap.put("11650", "서초구");
+        codeMap.put("11680", "강남구");
+        codeMap.put("11710", "송파구");
+        codeMap.put("11740", "강동구");
 
-        String sigungu = codeMap.getOrDefault(sigunguCode, "서울특별시 강남구");
+        String sigungu = codeMap.getOrDefault(sigunguCode, "강남구");
 
-        // 2. Data Fetch (해당 구의 아파트 매매 최근 데이터)
-        java.util.List<House> list = houseRepo
-                .findBySigunguContainingAndContractYm(sigungu, "202412")
-                .stream()
-                .filter(h -> "아파트".equals(h.getPropertyType()) && "매매".equals(h.getDealType()))
-                .collect(java.util.stream.Collectors.toList());
+        // 2. Data Fetch (해당 구의 입력받은 연도 실거래가 전체 데이터 및 필터 적용)
+        java.util.List<House> list = houseRepo.findDownloadData(sigungu, year, propertyType, dealType);
 
         // 3. Generate CSV (UTF-8 with BOM - 엑셀 한글 깨짐 방지)
         StringBuilder csv = new StringBuilder();
-        csv.append("계약년월,계약일,단지명,시군구,지번,전용면적(㎡),거래금액(만원),층수,건축년도\n");
+        csv.append("계약년월,계약일,유형,거래분류,단지명,시군구,지번,전용면적(㎡),거래금액(만원),보증금(만원),월세(만원),층수,건축년도\n");
 
         for (House entity : list) {
             csv.append(entity.getContractYm()).append(",")
                     .append(entity.getContractDay()).append(",")
+                    .append(escapeCsv(entity.getPropertyType())).append(",")
+                    .append(escapeCsv(entity.getDealType())).append(",")
                     .append(escapeCsv(entity.getName())).append(",")
                     .append(escapeCsv(entity.getSigungu())).append(",")
                     .append(escapeCsv(entity.getJibun())).append(",")
-                    .append(entity.getArea()).append(",")
-                    .append(entity.getTrade()).append(",")
-                    .append(entity.getFloorNo()).append(",")
+                    .append(entity.getArea() != null ? entity.getArea() : "").append(",")
+                    .append(entity.getTrade() != null ? entity.getTrade() : "").append(",")
+                    .append(entity.getDeposit() != null ? entity.getDeposit() : "").append(",")
+                    .append(entity.getRentfee() != null ? entity.getRentfee() : "").append(",")
+                    .append(entity.getFloorNo() != null ? entity.getFloorNo() : "").append(",")
                     .append("").append("\n"); // BuiltYear 없음
         }
 
@@ -763,7 +791,7 @@ public class PriceSearchService {
                 : parseSigungu(address);
         String dong = (request.getDong() != null && !request.getDong().isEmpty())
                 ? request.getDong()
-                : "";
+                : parseDong(address);
 
         // 면적 ±10% 범위
         java.math.BigDecimal margin = area.multiply(new java.math.BigDecimal("0.10"))
@@ -864,28 +892,52 @@ public class PriceSearchService {
         String sigungu = request.getSigungu() != null ? request.getSigungu() : "";
         String dong = request.getDong();
         String propertyType = request.getPropertyType();
+        String keyword = request.getKeyword();
+
+        // [P-009-UP] 주소 정규화 로직: 키워드가 주소 형태일 때 V-World를 통해 검색어 보정
+        if (keyword != null && keyword.trim().length() > 2) {
+            try {
+                io.pjj.ziphyeonjeon.global.API.vworld.dto.search.VworldSearchResponse vres = vworldSearchClient
+                        .searchJuso(keyword);
+
+                if (vres != null && vres.response != null && vres.response.result != null
+                        && vres.response.result.items != null && !vres.response.result.items.isEmpty()) {
+
+                    io.pjj.ziphyeonjeon.global.API.vworld.dto.search.VworldSearchResponse.Item firstItem = vres.response.result.items
+                            .get(0);
+                    String roadAddr = (firstItem.address != null) ? firstItem.address.road : null;
+
+                    if (roadAddr != null) {
+                        // 도로명 추출 (예: "상도로")
+                        String normalizedRoad = parseRoadName(roadAddr);
+                        if (normalizedRoad != null) {
+                            keyword = normalizedRoad;
+                        }
+
+                        // [Fix] 지역 정보 보충 로직 삭제: DB 데이터 포맷(은평구 vs 서울시 은평구) 불일치로 인한 검색 실패 방지
+
+                        log.info("Address normalized: '{}' -> keyword: '{}'",
+                                request.getKeyword(), keyword);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("V-World normalization skipped due to error: {}", e.getMessage());
+            }
+        }
 
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
                 request.getPage(), request.getSize());
 
         org.springframework.data.domain.Page<Object[]> pageResult = houseRepo.findPropertyDirectory(
-                sigungu, dong, propertyType, pageable);
+                sigungu, dong, keyword, propertyType, pageable);
 
-        return pageResult.map(row -> {
-            Long repHouseId = (Long) row[0];
-            String name = (String) row[1];
-            String roadname = (String) row[2];
-            Long totalTxs = (Long) row[3];
-            String propType = (String) row[4];
-
-            return io.pjj.ziphyeonjeon.PriceSearch.dto.response.PropertyDirectoryResponse.builder()
-                    .representativeHouseId(repHouseId)
-                    .complexName(name)
-                    .roadAddress(roadname)
-                    .totalTransactions(totalTxs)
-                    .propertyType(propType)
-                    .build();
-        });
+        return pageResult.map(row -> io.pjj.ziphyeonjeon.PriceSearch.dto.response.PropertyDirectoryResponse.builder()
+                .representativeHouseId((Long) row[0])
+                .complexName((String) row[1])
+                .roadAddress((String) row[2])
+                .totalTransactions((Long) row[3])
+                .propertyType((String) row[4])
+                .build());
     }
 
     // --- P-010: 매물 배틀 보드 (All-in-One Property Profile API) ---
@@ -912,8 +964,9 @@ public class PriceSearchService {
         io.pjj.ziphyeonjeon.PriceSearch.dto.response.JeonseRatioResponse jeonseRes = calculateJeonseRatio(jeonseReq);
 
         // 3. 미래 가치 (AI Prediction) - 저장된 최신 분석 결과 스캔
-        java.util.List<io.pjj.ziphyeonjeon.ai.entity.Analysis> analyses = analysisRepo.findBySigunguAndPropertyTypeAndDealTypeOrderByCreatedAtDesc(
-                house.getSigungu(), house.getPropertyType(), "매매");
+        java.util.List<io.pjj.ziphyeonjeon.ai.entity.Analysis> analyses = analysisRepo
+                .findBySigunguAndPropertyTypeAndDealTypeOrderByCreatedAtDesc(
+                        house.getSigungu(), house.getPropertyType(), "매매");
 
         Long aiPredictedPrice = null;
         Integer aiTargetMonth = null;
@@ -943,6 +996,36 @@ public class PriceSearchService {
                 .aiPredictedPrice(aiPredictedPrice)
                 .aiPredictTargetMonth(aiTargetMonth)
                 .aiPriceDiff(aiPriceDiff)
+                .build();
+    }
+
+    // --- P-010-S: 매물 비교 페이지용 경량 프로필 조회 (성능 최적화 버전) ---
+    public io.pjj.ziphyeonjeon.PriceSearch.dto.response.PropertyProfileResponse getSimplifiedProfile(Long houseId) {
+        House house = houseRepo.findById(houseId)
+                .orElseThrow(() -> new RuntimeException("House not found for id: " + houseId));
+
+        Long tradePrice = house.getTrade() != null ? house.getTrade() : 0L;
+        Long pyeongPrice = null;
+        if (tradePrice > 0 && house.getArea() != null && house.getArea().doubleValue() > 0) {
+            pyeongPrice = Math.round((tradePrice / house.getArea().doubleValue()) * 3.3);
+        }
+
+        // AI 분석이나 전세가율 계산 없이 기본 데이터만 조립하여 즉시 반환
+        // [P-010-S 정합성 보강] 전체 주소를 시군구 + 법정동 + 도로명 순으로 조합하여 정밀 분석 기반 마련
+        String fullAddress = (house.getSido() != null ? house.getSido() + " " : "")
+                + (house.getSigungu() != null ? house.getSigungu() + " " : "")
+                + (house.getEmd() != null ? house.getEmd() + " " : "")
+                + (house.getRoadname() != null ? house.getRoadname() : "");
+
+        return io.pjj.ziphyeonjeon.PriceSearch.dto.response.PropertyProfileResponse.builder()
+                .houseId(house.getHouseId())
+                .complexName(house.getName())
+                .roadAddress(fullAddress.trim())
+                .propertyType(house.getPropertyType())
+                .area(house.getArea())
+                .latestContractYm(house.getContractYm())
+                .latestTradePrice(tradePrice)
+                .pyeongPrice(pyeongPrice)
                 .build();
     }
 }
