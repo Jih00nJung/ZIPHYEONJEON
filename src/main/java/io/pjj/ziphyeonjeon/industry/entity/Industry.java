@@ -59,7 +59,9 @@ public class Industry {
     private Integer frcShopCount;
 
     @Builder
-    public Industry(Timestamp referenceDate, String sggCd, String adstrdCd, String adstrdNm, String svcIndutyCd, String svcIndutyNm, Integer shopCount, Integer similarIndutyShopCount, Double opbizRt, Integer opbizShopCount, Double clsbizRt, Integer clsbizShopCount, Integer frcShopCount) {
+    public Industry(Timestamp referenceDate, String sggCd, String adstrdCd, String adstrdNm, String svcIndutyCd,
+            String svcIndutyNm, Integer shopCount, Integer similarIndutyShopCount, Double opbizRt,
+            Integer opbizShopCount, Double clsbizRt, Integer clsbizShopCount, Integer frcShopCount) {
         this.referenceDate = referenceDate;
         this.sggCd = sggCd;
         this.adstrdCd = adstrdCd;
