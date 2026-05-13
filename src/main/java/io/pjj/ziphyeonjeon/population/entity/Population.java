@@ -38,7 +38,8 @@ public class Population {
     private String adstrdCd;
 
     @Builder
-    public Population(Timestamp referenceDate, Integer hours, Double populationCount, String sido, String sigungu, String adstrdCd) {
+    public Population(Timestamp referenceDate, Integer hours, Double populationCount, String sido, String sigungu,
+            String adstrdCd) {
         this.referenceDate = referenceDate;
         this.hours = hours;
         this.populationCount = populationCount;
