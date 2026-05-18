@@ -117,6 +117,10 @@ public interface HouseRepository extends JpaRepository<House, Long> {
                         String sigungu, String dong, String propertyType, String dealType, BigDecimal minArea,
                         BigDecimal maxArea);
 
+        // [NEW] 프로필 조회용: 동일 단지의 가장 최근 '매매' 실거래가 1건 조회
+        House findTopBySigunguAndEmdAndNameAndDealTypeOrderByContractYmDescContractDayDesc(
+                        String sigungu, String emd, String name, String dealType);
+
         // 평균 전세보증금 - AREA 범위와 타입 지정
         @Query("SELECT AVG(h.deposit) FROM House h " +
                         "WHERE h.sigungu LIKE :sigungu% " +

@@ -956,8 +956,21 @@ public class PriceSearchService {
 
         Long tradePrice = house.getTrade() != null ? house.getTrade() : 0L;
         Long pyeongPrice = null;
-        if (tradePrice > 0 && house.getArea() != null && house.getArea().doubleValue() > 0) {
-            pyeongPrice = Math.round((tradePrice / house.getArea().doubleValue()) * 3.3);
+        
+        // [FIX] 대표 매물이 전/월세여서 매매가가 없는 경우, 동일 단지의 가장 최근 '매매' 실거래가를 찾아 적용
+        if (tradePrice == 0L || !"매매".equals(house.getDealType())) {
+            House recentSale = houseRepo.findTopBySigunguAndEmdAndNameAndDealTypeOrderByContractYmDescContractDayDesc(
+                    house.getSigungu(), house.getEmd(), house.getName(), "매매");
+            if (recentSale != null && recentSale.getTrade() != null) {
+                tradePrice = recentSale.getTrade();
+                if (recentSale.getArea() != null && recentSale.getArea().doubleValue() > 0) {
+                    pyeongPrice = Math.round((tradePrice / recentSale.getArea().doubleValue()) * 3.3);
+                }
+            }
+        } else {
+            if (tradePrice > 0 && house.getArea() != null && house.getArea().doubleValue() > 0) {
+                pyeongPrice = Math.round((tradePrice / house.getArea().doubleValue()) * 3.3);
+            }
         }
 
         // 2. 전세 안전성 산출 (calculateJeonseRatio 활용)
@@ -1014,8 +1027,21 @@ public class PriceSearchService {
 
         Long tradePrice = house.getTrade() != null ? house.getTrade() : 0L;
         Long pyeongPrice = null;
-        if (tradePrice > 0 && house.getArea() != null && house.getArea().doubleValue() > 0) {
-            pyeongPrice = Math.round((tradePrice / house.getArea().doubleValue()) * 3.3);
+        
+        // [FIX] 대표 매물이 전/월세여서 매매가가 없는 경우, 동일 단지의 가장 최근 '매매' 실거래가를 찾아 적용
+        if (tradePrice == 0L || !"매매".equals(house.getDealType())) {
+            House recentSale = houseRepo.findTopBySigunguAndEmdAndNameAndDealTypeOrderByContractYmDescContractDayDesc(
+                    house.getSigungu(), house.getEmd(), house.getName(), "매매");
+            if (recentSale != null && recentSale.getTrade() != null) {
+                tradePrice = recentSale.getTrade();
+                if (recentSale.getArea() != null && recentSale.getArea().doubleValue() > 0) {
+                    pyeongPrice = Math.round((tradePrice / recentSale.getArea().doubleValue()) * 3.3);
+                }
+            }
+        } else {
+            if (tradePrice > 0 && house.getArea() != null && house.getArea().doubleValue() > 0) {
+                pyeongPrice = Math.round((tradePrice / house.getArea().doubleValue()) * 3.3);
+            }
         }
 
         // AI 분석이나 전세가율 계산 없이 기본 데이터만 조립하여 즉시 반환
